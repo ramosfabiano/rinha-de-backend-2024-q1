@@ -1,0 +1,92 @@
+version: '3.8'
+
+services:
+
+  # banco de dados
+  postgres:
+    container_name: postgres
+    hostname: postgres
+    network_mode: bridge
+    build: 
+      context: ./
+      dockerfile: postgres/Dockerfile
+    env_file:
+      - ./postgres/vars.env
+    deploy:
+      resources:
+        limits:
+          cpus: '0.85'
+          memory: '250MB'
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 10s
+      retries: 5
+      start_period: 10s
+      timeout: 5s
+
+  # app instancia 01
+  api01:
+    container_name: api01
+    hostname: api01
+    network_mode: bridge
+    build: 
+      context: ./
+      dockerfile: app/Dockerfile
+    env_file:
+      - ./postgres/vars.env
+    environment:
+      APP_PORT: 8081 
+    ports:
+      - 8081:8081
+    depends_on:
+      postgres:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: '100MB'
+
+  # app instancia 02
+  api02:
+    container_name: api02
+    hostname: api02
+    network_mode: bridge
+    build: 
+      context: ./
+      dockerfile: app/Dockerfile
+    env_file:
+      - ./postgres/vars.env
+    environment:
+      APP_PORT: 8082
+    ports:
+      - 8082:8082
+    depends_on:
+      postgres:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: '100MB'    
+
+  # balanceador de carga
+  nginx:
+    container_name: nginx
+    hostname: nginx
+    network_mode: bridge
+    build: 
+      context: ./
+      dockerfile: nginx/Dockerfile
+    ports:
+      - "9999:9999"
+    depends_on:
+      api01:
+        condition: service_healthy 
+      api02:
+        condition: service_healthy           
+    deploy:
+      resources:
+        limits:
+          cpus: '0.15'
+          memory: '100MB'
