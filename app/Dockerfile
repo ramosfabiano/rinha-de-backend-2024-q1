@@ -2,8 +2,10 @@ FROM docker.io/ramosfabiano/drogon:1.8.7
 
 WORKDIR /app
 
-COPY app/ .
+COPY . .
 
 RUN cmake -Bbuild &&  make -Cbuild install
+
+COPY config.json /etc/rinha/config.json
 
 CMD ["/usr/local/bin/rinha"]

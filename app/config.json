@@ -1,0 +1,27 @@
+{
+    "app": {
+      "daemon": false,
+      "relaunch_on_error": true
+    },
+    "listeners": [
+      {
+        "address": "0.0.0.0",
+        "port": 8080,
+        "https": false
+      }
+    ],
+    "databases": [
+      {
+        "rdbms": "postgres",
+        "host": "postgres",
+        "port": 5432,
+        "dbname": "postgres",
+        "user": "postgres",
+        "passwd": "1234",
+        "is_fast": false,
+        "client_encoding": "UTF8",
+        "connection_number": 8
+      }
+    ]
+  }
+  

@@ -8,8 +8,8 @@ services:
     hostname: postgres
     network_mode: bridge
     build: 
-      context: ./
-      dockerfile: postgres/Dockerfile
+      context: ./postgres
+      dockerfile: Dockerfile
     env_file:
       - ./postgres/vars.env
     deploy:
@@ -30,14 +30,8 @@ services:
     hostname: api01
     network_mode: bridge
     build: 
-      context: ./
-      dockerfile: app/Dockerfile
-    env_file:
-      - ./postgres/vars.env
-    environment:
-      APP_PORT: 8081 
-    ports:
-      - 8081:8081
+      context: ./app
+      dockerfile: Dockerfile
     depends_on:
       postgres:
         condition: service_healthy
@@ -45,7 +39,7 @@ services:
       resources:
         limits:
           cpus: '0.25'
-          memory: '100MB'
+          memory: '100MB' 
 
   # app instancia 02
   api02:
@@ -53,14 +47,8 @@ services:
     hostname: api02
     network_mode: bridge
     build: 
-      context: ./
-      dockerfile: app/Dockerfile
-    env_file:
-      - ./postgres/vars.env
-    environment:
-      APP_PORT: 8082
-    ports:
-      - 8082:8082
+      context: ./app
+      dockerfile: Dockerfile
     depends_on:
       postgres:
         condition: service_healthy
@@ -76,8 +64,8 @@ services:
     hostname: nginx
     network_mode: bridge
     build: 
-      context: ./
-      dockerfile: nginx/Dockerfile
+      context: ./nginx
+      dockerfile: Dockerfile
     ports:
       - "9999:9999"
     depends_on:
