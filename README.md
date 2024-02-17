@@ -8,7 +8,7 @@ Em resumo, o objetivo é implementar uma API simples, capaz de sobreviver a um t
 
 - [Postgres](https://www.postgresql.org/) (banco de dados)
 - [Nginx](https://www.nginx.com/) (balanceamento de carga)
-- C++ / [Drogon] (https://github.com/drogonframework/drogon)
+- C++ / [Drogon](https://drogon.org/)
 
 ## Execução da Aplicação
 
