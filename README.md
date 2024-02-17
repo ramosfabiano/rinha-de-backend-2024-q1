@@ -6,9 +6,10 @@ Em resumo, o objetivo é implementar uma API simples, capaz de sobreviver a um t
 
 ## Tech Stack
 
-- [Postgres](https://www.postgresql.org/) (banco de dados)
-- [Nginx](https://www.nginx.com/) (balanceamento de carga)
-- C++ / [Drogon](https://drogon.org/)
+- [Postgres](https://www.postgresql.org/)
+- [Nginx](https://www.nginx.com/)
+- [Drogon](https://drogon.org/)
+- C++
 
 ## Execução da Aplicação
 
