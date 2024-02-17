@@ -5,16 +5,11 @@
 using namespace drogon;
 using namespace drogon::orm;
 
-
 using Callback = std::function<void (const HttpResponsePtr &)> ;
-
 
 int main (int argc, const char **argv)
 {
-
     app().loadConfigFile("/etc/rinha/config.json");
-
-    app().setLogLevel(trantor::Logger::kTrace);
 
     app().registerHandler("/", [](const HttpRequestPtr& req, Callback &&callback)
     {
