@@ -77,21 +77,3 @@ services:
           cpus: '0.15'
           memory: '100MB'
 
-  # development container to run drogon_ctl.
-  # created here in order to be able to "see" postgres container
-  # TODO: check if podman-comopose already suppports the "profiles" feature
-  #   ex:
-  #     podman exec -it drogon /bin/bash
-  #     cd app/src/
-  #     drogon_ctl model create models
-  # drogon:
-  #   image: ramosfabiano/drogon:official-20240218
-  #   container_name: drogon
-  #   hostname: drogon
-  #   depends_on:
-  #     postgres:
-  #       condition: service_healthy     
-  #   volumes:
-  #     - ./app:/app
-  #   command: tail -f /dev/null  # leave the container running
-  #   profiles: ["dev"]
