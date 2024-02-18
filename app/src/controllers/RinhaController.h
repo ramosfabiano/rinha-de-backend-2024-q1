@@ -1,21 +1,29 @@
 #pragma once
 
-#include <drogon/HttpSimpleController.h>
+#include <drogon/HttpController.h>
 
 using namespace drogon;
 
-
-// https://github.com/drogonframework/drogon/wiki/ENG-03-Quick-Start#dynamic-site
-// https://github.com/drogonframework/drogon/wiki/ENG-04-0-Controller-Introduction
-// https://github.com/drogonframework/drogon/wiki/ENG-04-2-Controller-HttpController
-
-class RinhaController : public drogon::HttpSimpleController<RinhaController>
+class RinhaController : public drogon::HttpController<RinhaController, false>
 {
+  private:
+    bool somePrivateParameter;
+
   public:
-    void asyncHandleHttpRequest(const HttpRequestPtr& req, std::function<void (const HttpResponsePtr &)> &&callback) override;
-    PATH_LIST_BEGIN
-    // list path definitions here;
-    //PATH_ADD("/test", "filter1", "filter2", HttpMethod1, HttpMethod2...);
-    PATH_ADD("/test", Get);
-    PATH_LIST_END
+    METHOD_LIST_BEGIN
+    // use METHOD_ADD to add your custom processing function here;
+    // METHOD_ADD(User::get, "/{2}/{1}", Get); // path is /demo/v1/User/{arg2}/{arg1}
+    // METHOD_ADD(User::your_method_name, "/{1}/{2}/list", Get); // path is /demo/v1/User/{arg1}/{arg2}/list
+    // ADD_METHOD_TO(User::your_method_name, "/absolute/path/{1}/{2}/list", Get); // path is /absolute/path/{arg1}/{arg2}/list      
+      ADD_METHOD_TO(RinhaController::getStatement,"/clientes/{1}/extrato", drogon::Get);
+      ADD_METHOD_TO(RinhaController::processTransaction,"/clientes/{1}/transacoes", drogon::Post);
+    METHOD_LIST_END
+
+    // your declaration of processing function maybe like this:
+    // void get(const HttpRequestPtr& req, std::function<void (const HttpResponsePtr &)> &&callback, int p1, std::string p2);
+    // void your_method_name(const HttpRequestPtr& req, std::function<void (const HttpResponsePtr &)> &&callback, double p1, int p2) const;
+    void getStatement(const HttpRequestPtr &req, std::function<void (const HttpResponsePtr &)> &&callback, std::string clientId);
+    void processTransaction(const HttpRequestPtr &req, std::function<void (const HttpResponsePtr &)> &&callback, std::string clientId);
+
+    RinhaController(bool someParameter) : somePrivateParameter(someParameter) { std::cout << "RinhaController created. " << std::endl; }
 };

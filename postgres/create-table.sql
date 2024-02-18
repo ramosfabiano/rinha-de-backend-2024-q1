@@ -12,3 +12,11 @@ CREATE TABLE IF NOT EXISTS transacoes (
   descricao VARCHAR(10),
   data TIMESTAMPTZ DEFAULT (NOW())
 );
+
+
+INSERT INTO clientes VALUES (1,   100000, 0);
+INSERT INTO clientes VALUES (2,    80000, 0);
+INSERT INTO clientes VALUES (3,  1000000, 0);
+INSERT INTO clientes VALUES (4, 10000000, 0);
+INSERT INTO clientes VALUES (5,   500000, 0);
+

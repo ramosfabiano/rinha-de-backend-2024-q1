@@ -22,7 +22,9 @@ int main (int argc, const char **argv)
         callback(resp);
     });
     */
-
+   
+    drogon::app().registerController(std::make_shared<RinhaController>(true));
+    
     app().run();
 
     std::cout << "Exiting." << std::endl;

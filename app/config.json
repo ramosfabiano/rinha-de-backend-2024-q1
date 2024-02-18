@@ -1,7 +1,9 @@
 {
     "app": {
       "daemon": false,
-      "relaunch_on_error": true
+      "relaunch_on_error": true,
+      "max_connections": 100000,
+      "max_connections_per_ip": 0      
     },
     "listeners": [
       {
@@ -10,8 +12,9 @@
         "https": false
       }
     ],
-    "databases": [
+    "db_clients":[
       {
+        "name":"default",
         "rdbms": "postgresql",
         "host": "postgres",
         "port": 5432,
@@ -19,9 +22,8 @@
         "user": "postgres",
         "passwd": "1234",
         "is_fast": false,
-        "client_encoding": "UTF8",
-        "connection_number": 8
+        "connection_number": 4
       }
-    ]
+    ]    
   }
   

@@ -1,4 +1,4 @@
-FROM docker.io/ramosfabiano/drogon:1.8.7
+FROM docker.io/drogonframework/drogon
 
 WORKDIR /app
 
