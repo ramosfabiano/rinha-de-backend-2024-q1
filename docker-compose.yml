@@ -1,11 +1,15 @@
 version: '3.8'
 
+networks:
+  default:
+    driver: bridge
+    name: rinha-2024-q1
+    
 services:
 
   postgres:
     container_name: postgres
     hostname: postgres
-    network_mode: bridge
     build: 
       context: ./postgres
       dockerfile: Dockerfile
@@ -26,7 +30,6 @@ services:
   api01:
     container_name: api01
     hostname: api01
-    network_mode: bridge
     build: 
       context: ./app
       dockerfile: Dockerfile
@@ -42,7 +45,6 @@ services:
   api02:
     container_name: api02
     hostname: api02
-    network_mode: bridge
     build: 
       context: ./app
       dockerfile: Dockerfile
@@ -58,7 +60,6 @@ services:
   nginx:
     container_name: nginx
     hostname: nginx
-    network_mode: bridge
     build: 
       context: ./nginx
       dockerfile: Dockerfile
@@ -86,7 +87,6 @@ services:
   #   image: drogonframework/drogon
   #   container_name: drogon
   #   hostname: drogon
-  #   network_mode: bridge
   #   depends_on:
   #     postgres:
   #       condition: service_healthy     
