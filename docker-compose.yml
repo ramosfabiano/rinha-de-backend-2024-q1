@@ -2,7 +2,6 @@ version: '3.8'
 
 services:
 
-  # banco de dados
   postgres:
     container_name: postgres
     hostname: postgres
@@ -24,7 +23,6 @@ services:
       start_period: 10s
       timeout: 5s
 
-  # app instancia 01
   api01:
     container_name: api01
     hostname: api01
@@ -41,7 +39,6 @@ services:
           cpus: '0.25'
           memory: '100MB' 
 
-  # app instancia 02
   api02:
     container_name: api02
     hostname: api02
@@ -58,7 +55,6 @@ services:
           cpus: '0.25'
           memory: '100MB'    
 
-  # balanceador de carga
   nginx:
     container_name: nginx
     hostname: nginx
@@ -78,3 +74,25 @@ services:
         limits:
           cpus: '0.15'
           memory: '100MB'
+
+  # development container to run drogon_ctl.
+  # created here in order to be able to "see" postgres container
+  # TODO: check if podman-comopose already suppports the "profiles" feature
+  #   ex:
+  #     podman exec -it drogon /bin/bash
+  #     cd app/src/
+  #     drogon_ctl model create models
+  #     cd controllers ; drogon_ctl create controller RinhaController; cd ..
+  #    drogon_ctl project create
+  # drogon:
+  #   image: ramosfabiano/drogon:1.8.7
+  #   container_name: drogon
+  #   hostname: drogon
+  #   network_mode: bridge
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy     
+  #   volumes:
+  #     - ./app:/app
+  #   command: tail -f /dev/null  # leave the container running
+  #   profiles: ["dev"]

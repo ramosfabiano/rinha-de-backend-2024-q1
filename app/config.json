@@ -12,7 +12,7 @@
     ],
     "databases": [
       {
-        "rdbms": "postgres",
+        "rdbms": "postgresql",
         "host": "postgres",
         "port": 5432,
         "dbname": "postgres",

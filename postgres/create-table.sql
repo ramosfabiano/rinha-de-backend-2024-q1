@@ -1,14 +1,14 @@
 CREATE TABLE IF NOT EXISTS clientes (
   id SERIAL PRIMARY KEY,
-  limite INT,
-  saldo INT
+  limite INTEGER NOT NULL,
+  saldo INTEGER NOT NULL
 );
 
-CREATE TABLE transacoes (
-  client_id INT,
-  valor INT,
-  tipo VARCHAR(1),
+CREATE TABLE IF NOT EXISTS transacoes (
+  id SERIAL PRIMARY KEY,  
+  client_id INTEGER NOT NULL REFERENCES clientes(id),
+  valor INTEGER NOT NULL,
+  tipo VARCHAR(1) NOT NULL CHECK (tipo IN ('c', 'd')),
   descricao VARCHAR(10),
-  data_realizacao TIMESTAMPTZ,
-  CONSTRAINT client_fk FOREIGN KEY(client_id) REFERENCES clientes(id)
+  data TIMESTAMPTZ DEFAULT (NOW())
 );

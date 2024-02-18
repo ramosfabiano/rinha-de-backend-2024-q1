@@ -1,0 +1,13 @@
+{
+      "rdbms": "postgresql",
+      "host": "postgres",
+      "port": 5432,
+      "dbname": "postgres",
+      "user": "postgres",
+      "passwd": "1234",
+      "tables": [ "clientes", "transacoes" ],
+      "relationships": {
+            "enabled": false,
+            "items": []
+            }
+}
