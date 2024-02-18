@@ -21,8 +21,8 @@
         "dbname": "postgres",
         "user": "postgres",
         "passwd": "1234",
-        "is_fast": false,
-        "connection_number": 4
+        "is_fast": true,
+        "connection_number": 2
       }
     ]    
   }
