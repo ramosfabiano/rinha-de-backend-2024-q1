@@ -14,7 +14,7 @@ add_executable(${APP_EXECUTABLE_NAME} src/main.cc
                                       src/models/Clientes.cc 
                                       src/models/Transacoes.cc)
 
-target_include_directories(${APP_EXECUTABLE_NAME} PRIVATE ${JSONCPP_INCLUDE_DIRS})
+target_include_directories(${APP_EXECUTABLE_NAME} PRIVATE src/ ${JSONCPP_INCLUDE_DIRS})
 target_link_libraries(${APP_EXECUTABLE_NAME} PRIVATE ${DROGON_LIBRARIES})
 
 install (TARGETS ${APP_EXECUTABLE_NAME})
