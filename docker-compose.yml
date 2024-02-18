@@ -85,7 +85,7 @@ services:
   #     cd app/src/
   #     drogon_ctl model create models
   # drogon:
-  #   image: drogonframework/drogon
+  #   image: ramosfabiano/drogon:official-20240218
   #   container_name: drogon
   #   hostname: drogon
   #   depends_on:
