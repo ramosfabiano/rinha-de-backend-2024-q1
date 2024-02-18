@@ -21,7 +21,7 @@ CREATE INDEX client_index ON transacoes (client_id ASC);
 /*
  TRIGGER para verificar se existe saldo suficiente para realizar a transação
 */
-CREATE OR REPLACE FUNCTION verifica_saldo()
+CREATE OR REPLACE FUNCTION processa_transacao()
 RETURNS TRIGGER AS $$
 BEGIN
   IF NEW.valor = 0 THEN
@@ -47,9 +47,9 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER verifica_saldo_trigger
+CREATE TRIGGER processa_transacao_trigger
 BEFORE INSERT ON transacoes
-FOR EACH ROW EXECUTE FUNCTION verifica_saldo();
+FOR EACH ROW EXECUTE FUNCTION processa_transacao();
 
 /*
  Inicializa a tabela de clientes (mandatório segundo o enunciado do desafio)
