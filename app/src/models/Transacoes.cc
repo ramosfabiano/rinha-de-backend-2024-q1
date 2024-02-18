@@ -18,7 +18,7 @@ const std::string Transacoes::Cols::_client_id = "client_id";
 const std::string Transacoes::Cols::_valor = "valor";
 const std::string Transacoes::Cols::_tipo = "tipo";
 const std::string Transacoes::Cols::_descricao = "descricao";
-const std::string Transacoes::Cols::_data = "data";
+const std::string Transacoes::Cols::_realizada_em = "realizada_em";
 const std::string Transacoes::primaryKeyName = "id";
 const bool Transacoes::hasPrimaryKey = true;
 const std::string Transacoes::tableName = "transacoes";
@@ -28,8 +28,8 @@ const std::vector<typename Transacoes::MetaData> Transacoes::metaData_={
 {"client_id","int32_t","integer",4,0,0,1},
 {"valor","int32_t","integer",4,0,0,1},
 {"tipo","std::string","character varying",1,0,0,1},
-{"descricao","std::string","character varying",10,0,0,0},
-{"data","::trantor::Date","timestamp with time zone",0,0,0,0}
+{"descricao","std::string","character varying",10,0,0,1},
+{"realizada_em","::trantor::Date","timestamp with time zone",0,0,0,0}
 };
 const std::string &Transacoes::getColumnName(size_t index) noexcept(false)
 {
@@ -60,9 +60,9 @@ Transacoes::Transacoes(const Row &r, const ssize_t indexOffset) noexcept
         {
             descricao_=std::make_shared<std::string>(r["descricao"].as<std::string>());
         }
-        if(!r["data"].isNull())
+        if(!r["realizada_em"].isNull())
         {
-            auto timeStr = r["data"].as<std::string>();
+            auto timeStr = r["realizada_em"].as<std::string>();
             struct tm stm;
             memset(&stm,0,sizeof(stm));
             auto p = strptime(timeStr.c_str(),"%Y-%m-%d %H:%M:%S",&stm);
@@ -79,7 +79,7 @@ Transacoes::Transacoes(const Row &r, const ssize_t indexOffset) noexcept
                     }
                     decimalNum = (size_t)atol(decimals.c_str());
                 }
-                data_=std::make_shared<::trantor::Date>(t*1000000+decimalNum);
+                realizadaEm_=std::make_shared<::trantor::Date>(t*1000000+decimalNum);
             }
         }
     }
@@ -137,7 +137,7 @@ Transacoes::Transacoes(const Row &r, const ssize_t indexOffset) noexcept
                     }
                     decimalNum = (size_t)atol(decimals.c_str());
                 }
-                data_=std::make_shared<::trantor::Date>(t*1000000+decimalNum);
+                realizadaEm_=std::make_shared<::trantor::Date>(t*1000000+decimalNum);
             }
         }
     }
@@ -213,7 +213,7 @@ Transacoes::Transacoes(const Json::Value &pJson, const std::vector<std::string> 
                     }
                     decimalNum = (size_t)atol(decimals.c_str());
                 }
-                data_=std::make_shared<::trantor::Date>(t*1000000+decimalNum);
+                realizadaEm_=std::make_shared<::trantor::Date>(t*1000000+decimalNum);
             }
         }
     }
@@ -261,12 +261,12 @@ Transacoes::Transacoes(const Json::Value &pJson) noexcept(false)
             descricao_=std::make_shared<std::string>(pJson["descricao"].asString());
         }
     }
-    if(pJson.isMember("data"))
+    if(pJson.isMember("realizada_em"))
     {
         dirtyFlag_[5]=true;
-        if(!pJson["data"].isNull())
+        if(!pJson["realizada_em"].isNull())
         {
-            auto timeStr = pJson["data"].asString();
+            auto timeStr = pJson["realizada_em"].asString();
             struct tm stm;
             memset(&stm,0,sizeof(stm));
             auto p = strptime(timeStr.c_str(),"%Y-%m-%d %H:%M:%S",&stm);
@@ -283,7 +283,7 @@ Transacoes::Transacoes(const Json::Value &pJson) noexcept(false)
                     }
                     decimalNum = (size_t)atol(decimals.c_str());
                 }
-                data_=std::make_shared<::trantor::Date>(t*1000000+decimalNum);
+                realizadaEm_=std::make_shared<::trantor::Date>(t*1000000+decimalNum);
             }
         }
     }
@@ -358,7 +358,7 @@ void Transacoes::updateByMasqueradedJson(const Json::Value &pJson,
                     }
                     decimalNum = (size_t)atol(decimals.c_str());
                 }
-                data_=std::make_shared<::trantor::Date>(t*1000000+decimalNum);
+                realizadaEm_=std::make_shared<::trantor::Date>(t*1000000+decimalNum);
             }
         }
     }
@@ -405,12 +405,12 @@ void Transacoes::updateByJson(const Json::Value &pJson) noexcept(false)
             descricao_=std::make_shared<std::string>(pJson["descricao"].asString());
         }
     }
-    if(pJson.isMember("data"))
+    if(pJson.isMember("realizada_em"))
     {
         dirtyFlag_[5] = true;
-        if(!pJson["data"].isNull())
+        if(!pJson["realizada_em"].isNull())
         {
-            auto timeStr = pJson["data"].asString();
+            auto timeStr = pJson["realizada_em"].asString();
             struct tm stm;
             memset(&stm,0,sizeof(stm));
             auto p = strptime(timeStr.c_str(),"%Y-%m-%d %H:%M:%S",&stm);
@@ -427,7 +427,7 @@ void Transacoes::updateByJson(const Json::Value &pJson) noexcept(false)
                     }
                     decimalNum = (size_t)atol(decimals.c_str());
                 }
-                data_=std::make_shared<::trantor::Date>(t*1000000+decimalNum);
+                realizadaEm_=std::make_shared<::trantor::Date>(t*1000000+decimalNum);
             }
         }
     }
@@ -532,31 +532,26 @@ void Transacoes::setDescricao(std::string &&pDescricao) noexcept
     descricao_ = std::make_shared<std::string>(std::move(pDescricao));
     dirtyFlag_[4] = true;
 }
-void Transacoes::setDescricaoToNull() noexcept
-{
-    descricao_.reset();
-    dirtyFlag_[4] = true;
-}
 
-const ::trantor::Date &Transacoes::getValueOfData() const noexcept
+const ::trantor::Date &Transacoes::getValueOfRealizadaEm() const noexcept
 {
     const static ::trantor::Date defaultValue = ::trantor::Date();
-    if(data_)
-        return *data_;
+    if(realizadaEm_)
+        return *realizadaEm_;
     return defaultValue;
 }
-const std::shared_ptr<::trantor::Date> &Transacoes::getData() const noexcept
+const std::shared_ptr<::trantor::Date> &Transacoes::getRealizadaEm() const noexcept
 {
-    return data_;
+    return realizadaEm_;
 }
-void Transacoes::setData(const ::trantor::Date &pData) noexcept
+void Transacoes::setRealizadaEm(const ::trantor::Date &pRealizadaEm) noexcept
 {
-    data_ = std::make_shared<::trantor::Date>(pData);
+    realizadaEm_ = std::make_shared<::trantor::Date>(pRealizadaEm);
     dirtyFlag_[5] = true;
 }
-void Transacoes::setDataToNull() noexcept
+void Transacoes::setRealizadaEmToNull() noexcept
 {
-    data_.reset();
+    realizadaEm_.reset();
     dirtyFlag_[5] = true;
 }
 
@@ -571,7 +566,7 @@ const std::vector<std::string> &Transacoes::insertColumns() noexcept
         "valor",
         "tipo",
         "descricao",
-        "data"
+        "realizada_em"
     };
     return inCols;
 }
@@ -624,9 +619,9 @@ void Transacoes::outputArgs(drogon::orm::internal::SqlBinder &binder) const
     }
     if(dirtyFlag_[5])
     {
-        if(getData())
+        if(getRealizadaEm())
         {
-            binder << getValueOfData();
+            binder << getValueOfRealizadaEm();
         }
         else
         {
@@ -709,9 +704,9 @@ void Transacoes::updateArgs(drogon::orm::internal::SqlBinder &binder) const
     }
     if(dirtyFlag_[5])
     {
-        if(getData())
+        if(getRealizadaEm())
         {
-            binder << getValueOfData();
+            binder << getValueOfRealizadaEm();
         }
         else
         {
@@ -762,13 +757,13 @@ Json::Value Transacoes::toJson() const
     {
         ret["descricao"]=Json::Value();
     }
-    if(getData())
+    if(getRealizadaEm())
     {
-        ret["data"]=getData()->toDbStringLocal();
+        ret["realizada_em"]=getRealizadaEm()->toDbStringLocal();
     }
     else
     {
-        ret["data"]=Json::Value();
+        ret["realizada_em"]=Json::Value();
     }
     return ret;
 }
@@ -836,9 +831,9 @@ Json::Value Transacoes::toMasqueradedJson(
         }
         if(!pMasqueradingVector[5].empty())
         {
-            if(getData())
+            if(getRealizadaEm())
             {
-                ret[pMasqueradingVector[5]]=getData()->toDbStringLocal();
+                ret[pMasqueradingVector[5]]=getRealizadaEm()->toDbStringLocal();
             }
             else
             {
@@ -888,13 +883,13 @@ Json::Value Transacoes::toMasqueradedJson(
     {
         ret["descricao"]=Json::Value();
     }
-    if(getData())
+    if(getRealizadaEm())
     {
-        ret["data"]=getData()->toDbStringLocal();
+        ret["realizada_em"]=getRealizadaEm()->toDbStringLocal();
     }
     else
     {
-        ret["data"]=Json::Value();
+        ret["realizada_em"]=Json::Value();
     }
     return ret;
 }
@@ -941,9 +936,14 @@ bool Transacoes::validateJsonForCreation(const Json::Value &pJson, std::string &
         if(!validJsonOfField(4, "descricao", pJson["descricao"], err, true))
             return false;
     }
-    if(pJson.isMember("data"))
+    else
     {
-        if(!validJsonOfField(5, "data", pJson["data"], err, true))
+        err="The descricao column cannot be null";
+        return false;
+    }
+    if(pJson.isMember("realizada_em"))
+    {
+        if(!validJsonOfField(5, "realizada_em", pJson["realizada_em"], err, true))
             return false;
     }
     return true;
@@ -1012,6 +1012,11 @@ bool Transacoes::validateMasqueradedJsonForCreation(const Json::Value &pJson,
               if(!validJsonOfField(4, pMasqueradingVector[4], pJson[pMasqueradingVector[4]], err, true))
                   return false;
           }
+        else
+        {
+            err="The " + pMasqueradingVector[4] + " column cannot be null";
+            return false;
+        }
       }
       if(!pMasqueradingVector[5].empty())
       {
@@ -1061,9 +1066,9 @@ bool Transacoes::validateJsonForUpdate(const Json::Value &pJson, std::string &er
         if(!validJsonOfField(4, "descricao", pJson["descricao"], err, false))
             return false;
     }
-    if(pJson.isMember("data"))
+    if(pJson.isMember("realizada_em"))
     {
-        if(!validJsonOfField(5, "data", pJson["data"], err, false))
+        if(!validJsonOfField(5, "realizada_em", pJson["realizada_em"], err, false))
             return false;
     }
     return true;
@@ -1194,7 +1199,8 @@ bool Transacoes::validJsonOfField(size_t index,
         case 4:
             if(pJson.isNull())
             {
-                return true;
+                err="The " + fieldName + " column cannot be null";
+                return false;
             }
             if(!pJson.isString())
             {

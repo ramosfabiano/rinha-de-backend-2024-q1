@@ -19,6 +19,7 @@
 #include <trantor/utils/Logger.h>
 #include <json/json.h>
 #include <string>
+#include <string_view>
 #include <memory>
 #include <vector>
 #include <tuple>
@@ -48,7 +49,7 @@ class Transacoes
         static const std::string _valor;
         static const std::string _tipo;
         static const std::string _descricao;
-        static const std::string _data;
+        static const std::string _realizada_em;
     };
 
     const static int primaryKeyNumber;
@@ -141,16 +142,15 @@ class Transacoes
     ///Set the value of the column descricao
     void setDescricao(const std::string &pDescricao) noexcept;
     void setDescricao(std::string &&pDescricao) noexcept;
-    void setDescricaoToNull() noexcept;
 
-    /**  For column data  */
-    ///Get the value of the column data, returns the default value if the column is null
-    const ::trantor::Date &getValueOfData() const noexcept;
+    /**  For column realizada_em  */
+    ///Get the value of the column realizada_em, returns the default value if the column is null
+    const ::trantor::Date &getValueOfRealizadaEm() const noexcept;
     ///Return a shared_ptr object pointing to the column const value, or an empty shared_ptr object if the column is null
-    const std::shared_ptr<::trantor::Date> &getData() const noexcept;
-    ///Set the value of the column data
-    void setData(const ::trantor::Date &pData) noexcept;
-    void setDataToNull() noexcept;
+    const std::shared_ptr<::trantor::Date> &getRealizadaEm() const noexcept;
+    ///Set the value of the column realizada_em
+    void setRealizadaEm(const ::trantor::Date &pRealizadaEm) noexcept;
+    void setRealizadaEmToNull() noexcept;
 
 
     static size_t getColumnNumber() noexcept {  return 6;  }
@@ -179,7 +179,7 @@ class Transacoes
     std::shared_ptr<int32_t> valor_;
     std::shared_ptr<std::string> tipo_;
     std::shared_ptr<std::string> descricao_;
-    std::shared_ptr<::trantor::Date> data_;
+    std::shared_ptr<::trantor::Date> realizadaEm_;
     struct MetaData
     {
         const std::string colName_;
@@ -231,7 +231,7 @@ class Transacoes
             sql += "descricao,";
             ++parametersCount;
         }
-        sql += "data,";
+        sql += "realizada_em,";
         ++parametersCount;
         if(!dirtyFlag_[5])
         {
@@ -252,27 +252,27 @@ class Transacoes
         sql +="default,";
         if(dirtyFlag_[1])
         {
-            n = sprintf(placeholderStr,"$%d,",placeholder++);
+            n = snprintf(placeholderStr,sizeof(placeholderStr),"$%d,",placeholder++);
             sql.append(placeholderStr, n);
         }
         if(dirtyFlag_[2])
         {
-            n = sprintf(placeholderStr,"$%d,",placeholder++);
+            n = snprintf(placeholderStr,sizeof(placeholderStr),"$%d,",placeholder++);
             sql.append(placeholderStr, n);
         }
         if(dirtyFlag_[3])
         {
-            n = sprintf(placeholderStr,"$%d,",placeholder++);
+            n = snprintf(placeholderStr,sizeof(placeholderStr),"$%d,",placeholder++);
             sql.append(placeholderStr, n);
         }
         if(dirtyFlag_[4])
         {
-            n = sprintf(placeholderStr,"$%d,",placeholder++);
+            n = snprintf(placeholderStr,sizeof(placeholderStr),"$%d,",placeholder++);
             sql.append(placeholderStr, n);
         }
         if(dirtyFlag_[5])
         {
-            n = sprintf(placeholderStr,"$%d,",placeholder++);
+            n = snprintf(placeholderStr,sizeof(placeholderStr),"$%d,",placeholder++);
             sql.append(placeholderStr, n);
         }
         else
