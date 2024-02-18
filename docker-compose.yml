@@ -1,6 +1,7 @@
 version: '3.8'
 
 networks:
+
   default:
     driver: bridge
     name: rinha-2024-q1
