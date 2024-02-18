@@ -16,7 +16,8 @@ CREATE TABLE IF NOT EXISTS transacoes (
   realizada_em TIMESTAMPTZ DEFAULT (NOW())
 );
 
-CREATE INDEX client_index ON transacoes (client_id ASC);
+CREATE INDEX transaction_client_index ON transacoes (client_id ASC);
+CREATE INDEX transaction_date_index ON transacoes (realizada_em DESC);
 
 /*
  TRIGGER para verificar se existe saldo suficiente para realizar a transação
