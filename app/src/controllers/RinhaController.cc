@@ -14,11 +14,7 @@ void RinhaController::getStatement(const HttpRequestPtr &req, std::function<void
     auto dbClient = drogon::app().getFastDbClient();
     if (!dbClient) 
     {  
-        Json::Value ret;
-        ret["error"] = "Database nao disponivel";
-        auto resp = HttpResponse::newHttpJsonResponse(ret);
-        resp->setStatusCode(HttpStatusCode::k503ServiceUnavailable);
-        callback(resp);              
+        callback(errorResponse_( "Database nao disponivel", HttpStatusCode::k503ServiceUnavailable));
     }
     else
     {
@@ -57,19 +53,12 @@ void RinhaController::getStatement(const HttpRequestPtr &req, std::function<void
                         },
                         [callback](const drogon::orm::DrogonDbException& e) 
                         {
-                            Json::Value ret;
-                            ret["error"] = "Erro obtendo transacoes";
-                            auto resp = HttpResponse::newHttpJsonResponse(ret);
-                            resp->setStatusCode(HttpStatusCode::k500InternalServerError);
-                            callback(resp);                                
+                            callback(errorResponse_( "Erro obtendo transacoes", HttpStatusCode::k500InternalServerError));
                         });
             },
-            [callback](const drogon::orm::DrogonDbException& e)  {
-                Json::Value ret;
-                ret["error"] = "Cliente nao encontrado";
-                auto resp = HttpResponse::newHttpJsonResponse(ret);
-                resp->setStatusCode(HttpStatusCode::k404NotFound);
-                callback(resp);          
+            [callback](const drogon::orm::DrogonDbException& e)  
+            {
+                callback(errorResponse_( "Cliente nao encontrado", HttpStatusCode::k404NotFound));
             }
         );
     }
@@ -80,7 +69,27 @@ void RinhaController::getStatement(const HttpRequestPtr &req, std::function<void
 
 // https://github.com/zanfranceschi/rinha-de-backend-2024-q1/tree/main?tab=readme-ov-file#extrato
 
-bool validateRequest(Json::Value& jsonRequest) 
+void RinhaController::processTransaction(const HttpRequestPtr &req, std::function<void (const HttpResponsePtr &)> &&callback, std::string clientId)
+{
+    auto jsonRequest = req->getJsonObject();
+    if (!validateTransactionRequest_(*jsonRequest)) 
+    {
+        callback(errorResponse_( "invalid request", HttpStatusCode::k400BadRequest));
+    }
+
+    callback(errorResponse_( "not implemented yet", HttpStatusCode::k501NotImplemented));
+}
+
+std::shared_ptr<drogon::HttpResponse> RinhaController::errorResponse_(std::string message, HttpStatusCode status)
+{
+    Json::Value ret;
+    ret["error"] = message;
+    auto resp = HttpResponse::newHttpJsonResponse(ret);
+    resp->setStatusCode(status);
+    return resp;
+}
+
+bool RinhaController::validateTransactionRequest_(Json::Value& jsonRequest) 
 {
     if (!jsonRequest || !jsonRequest.isMember("valor") || !jsonRequest.isMember("tipo") || !jsonRequest.isMember("descricao")) 
     {
@@ -97,25 +106,4 @@ bool validateRequest(Json::Value& jsonRequest)
     }
 
     return true;
-}
-
-void RinhaController::processTransaction(const HttpRequestPtr &req, std::function<void (const HttpResponsePtr &)> &&callback, std::string clientId)
-{
-    auto jsonRequest = req->getJsonObject();
-    if (!validateRequest(*jsonRequest)) 
-    {
-        Json::Value ret;
-        ret["error"] = "invalid request";
-        auto resp = HttpResponse::newHttpJsonResponse(ret);
-        resp->setStatusCode(HttpStatusCode::k400BadRequest);
-        callback(resp); 
-    }
-
-
-    Json::Value ret;
-    ret["error"] = "not implemented yet";
-    auto resp = HttpResponse::newHttpJsonResponse(ret);
-    resp->setStatusCode(HttpStatusCode::k501NotImplemented);
-    callback(resp);
-
 }

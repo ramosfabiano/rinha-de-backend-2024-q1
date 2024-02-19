@@ -9,6 +9,10 @@ class RinhaController : public drogon::HttpController<RinhaController, false>
   private:
     bool somePrivateParameter;
 
+    bool validateTransactionRequest_(Json::Value& jsonRequest);
+    static std::shared_ptr<drogon::HttpResponse> errorResponse_(std::string message, HttpStatusCode status);
+
+
   public:
     METHOD_LIST_BEGIN
     // use METHOD_ADD to add your custom processing function here;
