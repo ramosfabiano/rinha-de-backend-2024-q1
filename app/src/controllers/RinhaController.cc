@@ -14,7 +14,7 @@ void RinhaController::getStatement(const HttpRequestPtr &req, std::function<void
     auto dbClient = drogon::app().getFastDbClient();
     if (!dbClient) 
     {  
-        callback(errorResponse_( "Database nao disponivel", HttpStatusCode::k503ServiceUnavailable));
+        callback(errorResponse_("Database nao disponivel", HttpStatusCode::k503ServiceUnavailable));
     }
     else
     {
@@ -53,12 +53,12 @@ void RinhaController::getStatement(const HttpRequestPtr &req, std::function<void
                         },
                         [callback](const drogon::orm::DrogonDbException& e) 
                         {
-                            callback(errorResponse_( "Erro obtendo transacoes", HttpStatusCode::k500InternalServerError));
+                            callback(errorResponse_("Erro obtendo transacoes", HttpStatusCode::k500InternalServerError));
                         });
             },
             [callback](const drogon::orm::DrogonDbException& e)  
             {
-                callback(errorResponse_( "Cliente nao encontrado", HttpStatusCode::k404NotFound));
+                callback(errorResponse_("Cliente nao encontrado", HttpStatusCode::k404NotFound));
             }
         );
     }
@@ -74,10 +74,46 @@ void RinhaController::processTransaction(const HttpRequestPtr &req, std::functio
     auto jsonRequest = req->getJsonObject();
     if (!validateTransactionRequest_(*jsonRequest)) 
     {
-        callback(errorResponse_( "invalid request", HttpStatusCode::k400BadRequest));
+        callback(errorResponse_("invalid request", HttpStatusCode::k400BadRequest));
     }
 
-    callback(errorResponse_( "not implemented yet", HttpStatusCode::k501NotImplemented));
+    auto dbClient = drogon::app().getFastDbClient();
+    if (!dbClient) 
+    {  
+        callback(errorResponse_("Database nao disponivel", HttpStatusCode::k503ServiceUnavailable));
+    }
+    else
+    {
+        auto clientsMapper = drogon::orm::Mapper<drogon_model::postgres::Clientes>(dbClient);
+        clientsMapper.findByPrimaryKey(
+            std::atoi(clientId.c_str()),
+            [dbClient, clientId, jsonRequest, callback](drogon_model::postgres::Clientes client) 
+            {
+                drogon_model::postgres::Transacoes newTransaction;
+                newTransaction.setClientId(std::atoi(clientId.c_str()));
+                newTransaction.setValor((*jsonRequest)["valor"].asInt64());
+                newTransaction.setTipo((*jsonRequest)["tipo"].asString());
+                newTransaction.setDescricao((*jsonRequest)["descricao"].asString());
+
+                auto transactionsMapper = drogon::orm::Mapper<drogon_model::postgres::Transacoes>(dbClient);
+                transactionsMapper.insert(newTransaction, 
+                    [callback](drogon_model::postgres::Transacoes transaction) 
+                    {
+                        std::stringstream errMsg;
+                        errMsg << "Transaction added successfully id=" << transaction.getValueOfId();
+                        callback(errorResponse_(errMsg.str(), HttpStatusCode::k200OK));
+                    },
+                    [callback](const drogon::orm::DrogonDbException& e) 
+                    {
+                        callback(errorResponse_("Error adding transaction: no funds", HttpStatusCode::k422UnprocessableEntity));
+                    });
+            },
+            [callback](const drogon::orm::DrogonDbException& e)  
+            {
+                callback(errorResponse_("Cliente nao encontrado", HttpStatusCode::k404NotFound));
+            }
+        );
+    }
 }
 
 std::shared_ptr<drogon::HttpResponse> RinhaController::errorResponse_(std::string message, HttpStatusCode status)
@@ -91,19 +127,22 @@ std::shared_ptr<drogon::HttpResponse> RinhaController::errorResponse_(std::strin
 
 bool RinhaController::validateTransactionRequest_(Json::Value& jsonRequest) 
 {
-    if (!jsonRequest || !jsonRequest.isMember("valor") || !jsonRequest.isMember("tipo") || !jsonRequest.isMember("descricao")) 
-    {
+    try {
+        if (!jsonRequest || !jsonRequest.isMember("valor") || !jsonRequest.isMember("tipo") || !jsonRequest.isMember("descricao")) 
+        {
+            return false;
+        }    
+
+        int value = jsonRequest["valor"].asInt64();
+        std::string type = jsonRequest["tipo"].asString();
+        std::string description = jsonRequest["descricao"].asString();  
+
+        if (type != "c" && type != "d") 
+        {
+            return false;
+        }
+    } catch (std::exception& e) {
         return false;
     }
-
-    double value = jsonRequest["valor"].asDouble();
-    std::string type = jsonRequest["tipo"].asString();
-    std::string description = jsonRequest["descricao"].asString();
-
-    if (type != "c" && type != "d") 
-    {
-        return false;
-    }
-
     return true;
 }
