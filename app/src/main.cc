@@ -1,5 +1,7 @@
 #include <iostream>
 #include <cstdlib>
+#include <thread>
+#include <chrono>
 #include <drogon/drogon.h>
 #include <controllers/RinhaController.h>
 
@@ -10,24 +12,11 @@ using Callback = std::function<void (const HttpResponsePtr &)> ;
 
 int main (int argc, const char **argv)
 {
+    // allow for docker-compose to properly start the database...
+    std::this_thread::sleep_for(std::chrono::seconds(3));
+
     app().loadConfigFile("/etc/rinha/config.json");
-
-    /*
-    app().registerHandler("/", [](const HttpRequestPtr& req, Callback &&callback)
-    {
-        auto resp = HttpResponse::newHttpResponse();
-        auto hostname = std::getenv("HOSTNAME");
-        resp->setStatusCode(HttpStatusCode::k200OK);
-        resp->setBody("Hello World from " + std::string(hostname));
-        callback(resp);
-    });
-    */
-   
     drogon::app().registerController(std::make_shared<RinhaController>(true));
-    
     app().run();
-
-    std::cout << "Exiting." << std::endl;
-
     return 0;
 }

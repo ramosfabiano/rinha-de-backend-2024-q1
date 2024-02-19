@@ -62,5 +62,8 @@ BEGIN
   INSERT INTO clientes (limite, saldo) VALUES (1000000, 0);
   INSERT INTO clientes (limite, saldo) VALUES (10000000, 0);
   INSERT INTO clientes (limite, saldo) VALUES (500000, 0);
+
+  --INSERT INTO transacoes (client_id, valor, tipo, descricao) VALUES (1, 10, 'c', 'teste');
+  --INSERT INTO transacoes (client_id, valor, tipo, descricao) VALUES (1, 20, 'd', 'teste');
 END;
 $$;
