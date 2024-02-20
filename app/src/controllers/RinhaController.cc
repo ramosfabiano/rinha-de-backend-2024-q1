@@ -20,7 +20,7 @@ void RinhaController::getStatement(const HttpRequestPtr& req, std::function<void
             std::atoi(clientId.c_str()),
             [dbClient, clientId, callback](drogon_model::postgres::Clientes client) {
                 Json::Value ret;
-                // saldo
+                // resumo/saldo
                 Json::Value summary;
                 summary["total"] = client.getValueOfSaldo();
                 summary["limite"] = client.getValueOfLimite();
