@@ -8,7 +8,6 @@
 
 // https://github.com/zanfranceschi/rinha-de-backend-2024-q1/tree/main?tab=readme-ov-file#transa%C3%A7%C3%B5es
 
-
 void RinhaController::getStatement(const HttpRequestPtr &req, std::function<void (const HttpResponsePtr &)> &&callback, std::string clientId)
 {
     auto dbClient = drogon::app().getFastDbClient();
@@ -159,7 +158,6 @@ void RinhaController::addClient(const HttpRequestPtr &req, std::function<void (c
         }   
     } 
 }
-
 
 std::shared_ptr<drogon::HttpResponse> RinhaController::errorResponse_(std::string message, HttpStatusCode status)
 {
