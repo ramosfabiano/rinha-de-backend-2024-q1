@@ -72,9 +72,9 @@ void RinhaController::getStatement(const HttpRequestPtr &req, std::function<void
 void RinhaController::processTransaction(const HttpRequestPtr &req, std::function<void (const HttpResponsePtr &)> &&callback, std::string clientId)
 {
     auto jsonRequest = req->getJsonObject();
-    if (!validateTransactionRequest_(*jsonRequest)) 
+    if (!jsonRequest || !validateTransactionRequest_(*jsonRequest)) 
     {
-        callback(errorResponse_("invalid request", HttpStatusCode::k400BadRequest));
+        callback(errorResponse_("Invalid request", HttpStatusCode::k400BadRequest));
     }
 
     auto dbClient = drogon::app().getFastDbClient();
@@ -116,6 +116,51 @@ void RinhaController::processTransaction(const HttpRequestPtr &req, std::functio
     }
 }
 
+
+//  curl -i http://localhost:9999/clientes -X POST -d '{"limite": 10000, "saldo": 0}' -H "Content-Type: application/json"
+//  curl http://localhost:9999/clientes -X POST -d '{"limite": 10000, "saldo": 0}' -H "Content-Type: application/json" | jq
+
+void RinhaController::addClient(const HttpRequestPtr &req, std::function<void (const HttpResponsePtr &)> &&callback)
+{
+    auto jsonRequest = req->getJsonObject();
+    if (!jsonRequest || !validateNewClientRequest_(*jsonRequest)) 
+    {
+        callback(errorResponse_("Invalid request", HttpStatusCode::k400BadRequest));
+    }
+    auto dbClient = drogon::app().getFastDbClient();
+    if (!dbClient) 
+    {  
+        callback(errorResponse_("Database nao disponivel", HttpStatusCode::k503ServiceUnavailable));
+    }
+    else
+    {
+        try
+        {
+            drogon_model::postgres::Clientes newClient;
+            newClient.setLimite((*jsonRequest)["limite"].asInt64());
+            newClient.setSaldo((*jsonRequest)["saldo"].asInt64());
+
+            auto clientsMapper = drogon::orm::Mapper<drogon_model::postgres::Clientes>(dbClient);
+            clientsMapper.insert(newClient, 
+                [callback](drogon_model::postgres::Clientes client) 
+                {
+                    std::stringstream errMsg;
+                    errMsg << "Client added successfully id=" << client.getValueOfId();
+                    callback(errorResponse_(errMsg.str(), HttpStatusCode::k200OK));
+                },
+                [callback](const drogon::orm::DrogonDbException& e) 
+                {
+                    callback(errorResponse_("Failed to add client", HttpStatusCode::k422UnprocessableEntity));
+                });
+        }
+        catch(const std::exception& e)
+        {
+            callback(errorResponse_("Failed to add client", HttpStatusCode::k422UnprocessableEntity));
+        }   
+    } 
+}
+
+
 std::shared_ptr<drogon::HttpResponse> RinhaController::errorResponse_(std::string message, HttpStatusCode status)
 {
     Json::Value ret;
@@ -125,23 +170,38 @@ std::shared_ptr<drogon::HttpResponse> RinhaController::errorResponse_(std::strin
     return resp;
 }
 
+bool RinhaController::validateNewClientRequest_(Json::Value& jsonRequest) 
+{
+    try 
+    {
+        if (!jsonRequest || !jsonRequest.isMember("limite") || !jsonRequest.isMember("saldo")) 
+        {
+            return false;
+        }    
+    } 
+    catch (std::exception& e) 
+    {
+        return false;
+    }
+    return true;
+}
+
 bool RinhaController::validateTransactionRequest_(Json::Value& jsonRequest) 
 {
-    try {
+    try 
+    {
         if (!jsonRequest || !jsonRequest.isMember("valor") || !jsonRequest.isMember("tipo") || !jsonRequest.isMember("descricao")) 
         {
             return false;
         }    
-
-        int value = jsonRequest["valor"].asInt64();
         std::string type = jsonRequest["tipo"].asString();
-        std::string description = jsonRequest["descricao"].asString();  
-
         if (type != "c" && type != "d") 
         {
             return false;
         }
-    } catch (std::exception& e) {
+    } 
+    catch (std::exception& e) 
+    {
         return false;
     }
     return true;

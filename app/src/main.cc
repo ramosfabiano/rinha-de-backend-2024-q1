@@ -16,7 +16,7 @@ int main (int argc, const char **argv)
     std::this_thread::sleep_for(std::chrono::seconds(3));
 
     app().loadConfigFile("/etc/rinha/config.json");
-    drogon::app().registerController(std::make_shared<RinhaController>(true));
+    drogon::app().registerController(std::make_shared<RinhaController>());
     app().run();
     return 0;
 }
