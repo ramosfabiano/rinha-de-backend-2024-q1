@@ -1,17 +1,17 @@
-#include <iostream>
-#include <cstdlib>
-#include <thread>
-#include <chrono>
-#include <drogon/drogon.h>
 #include <controllers/RinhaController.h>
+#include <drogon/drogon.h>
+
+#include <chrono>
+#include <cstdlib>
+#include <iostream>
+#include <thread>
 
 using namespace drogon;
 using namespace drogon::orm;
 
-using Callback = std::function<void (const HttpResponsePtr &)> ;
+using Callback = std::function<void(const HttpResponsePtr &)>;
 
-int main (int argc, const char **argv)
-{
+int main(int argc, const char **argv) {
     // allow for docker-compose to properly start the database...
     std::this_thread::sleep_for(std::chrono::seconds(3));
 

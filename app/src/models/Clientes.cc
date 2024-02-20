@@ -6,7 +6,9 @@
  */
 
 #include "Clientes.h"
+
 #include <drogon/utils/Utilities.h>
+
 #include <string>
 
 using namespace drogon;
@@ -20,609 +22,416 @@ const std::string Clientes::primaryKeyName = "id";
 const bool Clientes::hasPrimaryKey = true;
 const std::string Clientes::tableName = "clientes";
 
-const std::vector<typename Clientes::MetaData> Clientes::metaData_={
-{"id","int32_t","integer",4,1,1,1},
-{"limite","int32_t","integer",4,0,0,1},
-{"saldo","int32_t","integer",4,0,0,1}
-};
-const std::string &Clientes::getColumnName(size_t index) noexcept(false)
-{
+const std::vector<typename Clientes::MetaData> Clientes::metaData_ = {
+    {"id", "int32_t", "integer", 4, 1, 1, 1}, {"limite", "int32_t", "integer", 4, 0, 0, 1}, {"saldo", "int32_t", "integer", 4, 0, 0, 1}};
+const std::string &Clientes::getColumnName(size_t index) noexcept(false) {
     assert(index < metaData_.size());
     return metaData_[index].colName_;
 }
-Clientes::Clientes(const Row &r, const ssize_t indexOffset) noexcept
-{
-    if(indexOffset < 0)
-    {
-        if(!r["id"].isNull())
-        {
-            id_=std::make_shared<int32_t>(r["id"].as<int32_t>());
+Clientes::Clientes(const Row &r, const ssize_t indexOffset) noexcept {
+    if (indexOffset < 0) {
+        if (!r["id"].isNull()) {
+            id_ = std::make_shared<int32_t>(r["id"].as<int32_t>());
         }
-        if(!r["limite"].isNull())
-        {
-            limite_=std::make_shared<int32_t>(r["limite"].as<int32_t>());
+        if (!r["limite"].isNull()) {
+            limite_ = std::make_shared<int32_t>(r["limite"].as<int32_t>());
         }
-        if(!r["saldo"].isNull())
-        {
-            saldo_=std::make_shared<int32_t>(r["saldo"].as<int32_t>());
+        if (!r["saldo"].isNull()) {
+            saldo_ = std::make_shared<int32_t>(r["saldo"].as<int32_t>());
         }
-    }
-    else
-    {
+    } else {
         size_t offset = (size_t)indexOffset;
-        if(offset + 3 > r.size())
-        {
+        if (offset + 3 > r.size()) {
             LOG_FATAL << "Invalid SQL result for this model";
             return;
         }
         size_t index;
         index = offset + 0;
-        if(!r[index].isNull())
-        {
-            id_=std::make_shared<int32_t>(r[index].as<int32_t>());
+        if (!r[index].isNull()) {
+            id_ = std::make_shared<int32_t>(r[index].as<int32_t>());
         }
         index = offset + 1;
-        if(!r[index].isNull())
-        {
-            limite_=std::make_shared<int32_t>(r[index].as<int32_t>());
+        if (!r[index].isNull()) {
+            limite_ = std::make_shared<int32_t>(r[index].as<int32_t>());
         }
         index = offset + 2;
-        if(!r[index].isNull())
-        {
-            saldo_=std::make_shared<int32_t>(r[index].as<int32_t>());
+        if (!r[index].isNull()) {
+            saldo_ = std::make_shared<int32_t>(r[index].as<int32_t>());
         }
     }
-
 }
 
-Clientes::Clientes(const Json::Value &pJson, const std::vector<std::string> &pMasqueradingVector) noexcept(false)
-{
-    if(pMasqueradingVector.size() != 3)
-    {
+Clientes::Clientes(const Json::Value &pJson, const std::vector<std::string> &pMasqueradingVector) noexcept(false) {
+    if (pMasqueradingVector.size() != 3) {
         LOG_ERROR << "Bad masquerading vector";
         return;
     }
-    if(!pMasqueradingVector[0].empty() && pJson.isMember(pMasqueradingVector[0]))
-    {
+    if (!pMasqueradingVector[0].empty() && pJson.isMember(pMasqueradingVector[0])) {
         dirtyFlag_[0] = true;
-        if(!pJson[pMasqueradingVector[0]].isNull())
-        {
-            id_=std::make_shared<int32_t>((int32_t)pJson[pMasqueradingVector[0]].asInt64());
+        if (!pJson[pMasqueradingVector[0]].isNull()) {
+            id_ = std::make_shared<int32_t>((int32_t)pJson[pMasqueradingVector[0]].asInt64());
         }
     }
-    if(!pMasqueradingVector[1].empty() && pJson.isMember(pMasqueradingVector[1]))
-    {
+    if (!pMasqueradingVector[1].empty() && pJson.isMember(pMasqueradingVector[1])) {
         dirtyFlag_[1] = true;
-        if(!pJson[pMasqueradingVector[1]].isNull())
-        {
-            limite_=std::make_shared<int32_t>((int32_t)pJson[pMasqueradingVector[1]].asInt64());
+        if (!pJson[pMasqueradingVector[1]].isNull()) {
+            limite_ = std::make_shared<int32_t>((int32_t)pJson[pMasqueradingVector[1]].asInt64());
         }
     }
-    if(!pMasqueradingVector[2].empty() && pJson.isMember(pMasqueradingVector[2]))
-    {
+    if (!pMasqueradingVector[2].empty() && pJson.isMember(pMasqueradingVector[2])) {
         dirtyFlag_[2] = true;
-        if(!pJson[pMasqueradingVector[2]].isNull())
-        {
-            saldo_=std::make_shared<int32_t>((int32_t)pJson[pMasqueradingVector[2]].asInt64());
+        if (!pJson[pMasqueradingVector[2]].isNull()) {
+            saldo_ = std::make_shared<int32_t>((int32_t)pJson[pMasqueradingVector[2]].asInt64());
         }
     }
 }
 
-Clientes::Clientes(const Json::Value &pJson) noexcept(false)
-{
-    if(pJson.isMember("id"))
-    {
-        dirtyFlag_[0]=true;
-        if(!pJson["id"].isNull())
-        {
-            id_=std::make_shared<int32_t>((int32_t)pJson["id"].asInt64());
+Clientes::Clientes(const Json::Value &pJson) noexcept(false) {
+    if (pJson.isMember("id")) {
+        dirtyFlag_[0] = true;
+        if (!pJson["id"].isNull()) {
+            id_ = std::make_shared<int32_t>((int32_t)pJson["id"].asInt64());
         }
     }
-    if(pJson.isMember("limite"))
-    {
-        dirtyFlag_[1]=true;
-        if(!pJson["limite"].isNull())
-        {
-            limite_=std::make_shared<int32_t>((int32_t)pJson["limite"].asInt64());
+    if (pJson.isMember("limite")) {
+        dirtyFlag_[1] = true;
+        if (!pJson["limite"].isNull()) {
+            limite_ = std::make_shared<int32_t>((int32_t)pJson["limite"].asInt64());
         }
     }
-    if(pJson.isMember("saldo"))
-    {
-        dirtyFlag_[2]=true;
-        if(!pJson["saldo"].isNull())
-        {
-            saldo_=std::make_shared<int32_t>((int32_t)pJson["saldo"].asInt64());
+    if (pJson.isMember("saldo")) {
+        dirtyFlag_[2] = true;
+        if (!pJson["saldo"].isNull()) {
+            saldo_ = std::make_shared<int32_t>((int32_t)pJson["saldo"].asInt64());
         }
     }
 }
 
-void Clientes::updateByMasqueradedJson(const Json::Value &pJson,
-                                            const std::vector<std::string> &pMasqueradingVector) noexcept(false)
-{
-    if(pMasqueradingVector.size() != 3)
-    {
+void Clientes::updateByMasqueradedJson(const Json::Value &pJson, const std::vector<std::string> &pMasqueradingVector) noexcept(false) {
+    if (pMasqueradingVector.size() != 3) {
         LOG_ERROR << "Bad masquerading vector";
         return;
     }
-    if(!pMasqueradingVector[0].empty() && pJson.isMember(pMasqueradingVector[0]))
-    {
-        if(!pJson[pMasqueradingVector[0]].isNull())
-        {
-            id_=std::make_shared<int32_t>((int32_t)pJson[pMasqueradingVector[0]].asInt64());
+    if (!pMasqueradingVector[0].empty() && pJson.isMember(pMasqueradingVector[0])) {
+        if (!pJson[pMasqueradingVector[0]].isNull()) {
+            id_ = std::make_shared<int32_t>((int32_t)pJson[pMasqueradingVector[0]].asInt64());
         }
     }
-    if(!pMasqueradingVector[1].empty() && pJson.isMember(pMasqueradingVector[1]))
-    {
+    if (!pMasqueradingVector[1].empty() && pJson.isMember(pMasqueradingVector[1])) {
         dirtyFlag_[1] = true;
-        if(!pJson[pMasqueradingVector[1]].isNull())
-        {
-            limite_=std::make_shared<int32_t>((int32_t)pJson[pMasqueradingVector[1]].asInt64());
+        if (!pJson[pMasqueradingVector[1]].isNull()) {
+            limite_ = std::make_shared<int32_t>((int32_t)pJson[pMasqueradingVector[1]].asInt64());
         }
     }
-    if(!pMasqueradingVector[2].empty() && pJson.isMember(pMasqueradingVector[2]))
-    {
+    if (!pMasqueradingVector[2].empty() && pJson.isMember(pMasqueradingVector[2])) {
         dirtyFlag_[2] = true;
-        if(!pJson[pMasqueradingVector[2]].isNull())
-        {
-            saldo_=std::make_shared<int32_t>((int32_t)pJson[pMasqueradingVector[2]].asInt64());
+        if (!pJson[pMasqueradingVector[2]].isNull()) {
+            saldo_ = std::make_shared<int32_t>((int32_t)pJson[pMasqueradingVector[2]].asInt64());
         }
     }
 }
 
-void Clientes::updateByJson(const Json::Value &pJson) noexcept(false)
-{
-    if(pJson.isMember("id"))
-    {
-        if(!pJson["id"].isNull())
-        {
-            id_=std::make_shared<int32_t>((int32_t)pJson["id"].asInt64());
+void Clientes::updateByJson(const Json::Value &pJson) noexcept(false) {
+    if (pJson.isMember("id")) {
+        if (!pJson["id"].isNull()) {
+            id_ = std::make_shared<int32_t>((int32_t)pJson["id"].asInt64());
         }
     }
-    if(pJson.isMember("limite"))
-    {
+    if (pJson.isMember("limite")) {
         dirtyFlag_[1] = true;
-        if(!pJson["limite"].isNull())
-        {
-            limite_=std::make_shared<int32_t>((int32_t)pJson["limite"].asInt64());
+        if (!pJson["limite"].isNull()) {
+            limite_ = std::make_shared<int32_t>((int32_t)pJson["limite"].asInt64());
         }
     }
-    if(pJson.isMember("saldo"))
-    {
+    if (pJson.isMember("saldo")) {
         dirtyFlag_[2] = true;
-        if(!pJson["saldo"].isNull())
-        {
-            saldo_=std::make_shared<int32_t>((int32_t)pJson["saldo"].asInt64());
+        if (!pJson["saldo"].isNull()) {
+            saldo_ = std::make_shared<int32_t>((int32_t)pJson["saldo"].asInt64());
         }
     }
 }
 
-const int32_t &Clientes::getValueOfId() const noexcept
-{
+const int32_t &Clientes::getValueOfId() const noexcept {
     const static int32_t defaultValue = int32_t();
-    if(id_)
-        return *id_;
+    if (id_) return *id_;
     return defaultValue;
 }
-const std::shared_ptr<int32_t> &Clientes::getId() const noexcept
-{
-    return id_;
-}
-void Clientes::setId(const int32_t &pId) noexcept
-{
+const std::shared_ptr<int32_t> &Clientes::getId() const noexcept { return id_; }
+void Clientes::setId(const int32_t &pId) noexcept {
     id_ = std::make_shared<int32_t>(pId);
     dirtyFlag_[0] = true;
 }
-const typename Clientes::PrimaryKeyType & Clientes::getPrimaryKey() const
-{
+const typename Clientes::PrimaryKeyType &Clientes::getPrimaryKey() const {
     assert(id_);
     return *id_;
 }
 
-const int32_t &Clientes::getValueOfLimite() const noexcept
-{
+const int32_t &Clientes::getValueOfLimite() const noexcept {
     const static int32_t defaultValue = int32_t();
-    if(limite_)
-        return *limite_;
+    if (limite_) return *limite_;
     return defaultValue;
 }
-const std::shared_ptr<int32_t> &Clientes::getLimite() const noexcept
-{
-    return limite_;
-}
-void Clientes::setLimite(const int32_t &pLimite) noexcept
-{
+const std::shared_ptr<int32_t> &Clientes::getLimite() const noexcept { return limite_; }
+void Clientes::setLimite(const int32_t &pLimite) noexcept {
     limite_ = std::make_shared<int32_t>(pLimite);
     dirtyFlag_[1] = true;
 }
 
-const int32_t &Clientes::getValueOfSaldo() const noexcept
-{
+const int32_t &Clientes::getValueOfSaldo() const noexcept {
     const static int32_t defaultValue = int32_t();
-    if(saldo_)
-        return *saldo_;
+    if (saldo_) return *saldo_;
     return defaultValue;
 }
-const std::shared_ptr<int32_t> &Clientes::getSaldo() const noexcept
-{
-    return saldo_;
-}
-void Clientes::setSaldo(const int32_t &pSaldo) noexcept
-{
+const std::shared_ptr<int32_t> &Clientes::getSaldo() const noexcept { return saldo_; }
+void Clientes::setSaldo(const int32_t &pSaldo) noexcept {
     saldo_ = std::make_shared<int32_t>(pSaldo);
     dirtyFlag_[2] = true;
 }
 
-void Clientes::updateId(const uint64_t id)
-{
-}
+void Clientes::updateId(const uint64_t id) {}
 
-const std::vector<std::string> &Clientes::insertColumns() noexcept
-{
-    static const std::vector<std::string> inCols={
-        "limite",
-        "saldo"
-    };
+const std::vector<std::string> &Clientes::insertColumns() noexcept {
+    static const std::vector<std::string> inCols = {"limite", "saldo"};
     return inCols;
 }
 
-void Clientes::outputArgs(drogon::orm::internal::SqlBinder &binder) const
-{
-    if(dirtyFlag_[1])
-    {
-        if(getLimite())
-        {
+void Clientes::outputArgs(drogon::orm::internal::SqlBinder &binder) const {
+    if (dirtyFlag_[1]) {
+        if (getLimite()) {
             binder << getValueOfLimite();
-        }
-        else
-        {
+        } else {
             binder << nullptr;
         }
     }
-    if(dirtyFlag_[2])
-    {
-        if(getSaldo())
-        {
+    if (dirtyFlag_[2]) {
+        if (getSaldo()) {
             binder << getValueOfSaldo();
-        }
-        else
-        {
+        } else {
             binder << nullptr;
         }
     }
 }
 
-const std::vector<std::string> Clientes::updateColumns() const
-{
+const std::vector<std::string> Clientes::updateColumns() const {
     std::vector<std::string> ret;
-    if(dirtyFlag_[1])
-    {
+    if (dirtyFlag_[1]) {
         ret.push_back(getColumnName(1));
     }
-    if(dirtyFlag_[2])
-    {
+    if (dirtyFlag_[2]) {
         ret.push_back(getColumnName(2));
     }
     return ret;
 }
 
-void Clientes::updateArgs(drogon::orm::internal::SqlBinder &binder) const
-{
-    if(dirtyFlag_[1])
-    {
-        if(getLimite())
-        {
+void Clientes::updateArgs(drogon::orm::internal::SqlBinder &binder) const {
+    if (dirtyFlag_[1]) {
+        if (getLimite()) {
             binder << getValueOfLimite();
-        }
-        else
-        {
+        } else {
             binder << nullptr;
         }
     }
-    if(dirtyFlag_[2])
-    {
-        if(getSaldo())
-        {
+    if (dirtyFlag_[2]) {
+        if (getSaldo()) {
             binder << getValueOfSaldo();
-        }
-        else
-        {
+        } else {
             binder << nullptr;
         }
     }
 }
-Json::Value Clientes::toJson() const
-{
+Json::Value Clientes::toJson() const {
     Json::Value ret;
-    if(getId())
-    {
-        ret["id"]=getValueOfId();
+    if (getId()) {
+        ret["id"] = getValueOfId();
+    } else {
+        ret["id"] = Json::Value();
     }
-    else
-    {
-        ret["id"]=Json::Value();
+    if (getLimite()) {
+        ret["limite"] = getValueOfLimite();
+    } else {
+        ret["limite"] = Json::Value();
     }
-    if(getLimite())
-    {
-        ret["limite"]=getValueOfLimite();
-    }
-    else
-    {
-        ret["limite"]=Json::Value();
-    }
-    if(getSaldo())
-    {
-        ret["saldo"]=getValueOfSaldo();
-    }
-    else
-    {
-        ret["saldo"]=Json::Value();
+    if (getSaldo()) {
+        ret["saldo"] = getValueOfSaldo();
+    } else {
+        ret["saldo"] = Json::Value();
     }
     return ret;
 }
 
-Json::Value Clientes::toMasqueradedJson(
-    const std::vector<std::string> &pMasqueradingVector) const
-{
+Json::Value Clientes::toMasqueradedJson(const std::vector<std::string> &pMasqueradingVector) const {
     Json::Value ret;
-    if(pMasqueradingVector.size() == 3)
-    {
-        if(!pMasqueradingVector[0].empty())
-        {
-            if(getId())
-            {
-                ret[pMasqueradingVector[0]]=getValueOfId();
-            }
-            else
-            {
-                ret[pMasqueradingVector[0]]=Json::Value();
+    if (pMasqueradingVector.size() == 3) {
+        if (!pMasqueradingVector[0].empty()) {
+            if (getId()) {
+                ret[pMasqueradingVector[0]] = getValueOfId();
+            } else {
+                ret[pMasqueradingVector[0]] = Json::Value();
             }
         }
-        if(!pMasqueradingVector[1].empty())
-        {
-            if(getLimite())
-            {
-                ret[pMasqueradingVector[1]]=getValueOfLimite();
-            }
-            else
-            {
-                ret[pMasqueradingVector[1]]=Json::Value();
+        if (!pMasqueradingVector[1].empty()) {
+            if (getLimite()) {
+                ret[pMasqueradingVector[1]] = getValueOfLimite();
+            } else {
+                ret[pMasqueradingVector[1]] = Json::Value();
             }
         }
-        if(!pMasqueradingVector[2].empty())
-        {
-            if(getSaldo())
-            {
-                ret[pMasqueradingVector[2]]=getValueOfSaldo();
-            }
-            else
-            {
-                ret[pMasqueradingVector[2]]=Json::Value();
+        if (!pMasqueradingVector[2].empty()) {
+            if (getSaldo()) {
+                ret[pMasqueradingVector[2]] = getValueOfSaldo();
+            } else {
+                ret[pMasqueradingVector[2]] = Json::Value();
             }
         }
         return ret;
     }
     LOG_ERROR << "Masquerade failed";
-    if(getId())
-    {
-        ret["id"]=getValueOfId();
+    if (getId()) {
+        ret["id"] = getValueOfId();
+    } else {
+        ret["id"] = Json::Value();
     }
-    else
-    {
-        ret["id"]=Json::Value();
+    if (getLimite()) {
+        ret["limite"] = getValueOfLimite();
+    } else {
+        ret["limite"] = Json::Value();
     }
-    if(getLimite())
-    {
-        ret["limite"]=getValueOfLimite();
-    }
-    else
-    {
-        ret["limite"]=Json::Value();
-    }
-    if(getSaldo())
-    {
-        ret["saldo"]=getValueOfSaldo();
-    }
-    else
-    {
-        ret["saldo"]=Json::Value();
+    if (getSaldo()) {
+        ret["saldo"] = getValueOfSaldo();
+    } else {
+        ret["saldo"] = Json::Value();
     }
     return ret;
 }
 
-bool Clientes::validateJsonForCreation(const Json::Value &pJson, std::string &err)
-{
-    if(pJson.isMember("id"))
-    {
-        if(!validJsonOfField(0, "id", pJson["id"], err, true))
-            return false;
+bool Clientes::validateJsonForCreation(const Json::Value &pJson, std::string &err) {
+    if (pJson.isMember("id")) {
+        if (!validJsonOfField(0, "id", pJson["id"], err, true)) return false;
     }
-    if(pJson.isMember("limite"))
-    {
-        if(!validJsonOfField(1, "limite", pJson["limite"], err, true))
-            return false;
-    }
-    else
-    {
-        err="The limite column cannot be null";
+    if (pJson.isMember("limite")) {
+        if (!validJsonOfField(1, "limite", pJson["limite"], err, true)) return false;
+    } else {
+        err = "The limite column cannot be null";
         return false;
     }
-    if(pJson.isMember("saldo"))
-    {
-        if(!validJsonOfField(2, "saldo", pJson["saldo"], err, true))
-            return false;
-    }
-    else
-    {
-        err="The saldo column cannot be null";
+    if (pJson.isMember("saldo")) {
+        if (!validJsonOfField(2, "saldo", pJson["saldo"], err, true)) return false;
+    } else {
+        err = "The saldo column cannot be null";
         return false;
     }
     return true;
 }
-bool Clientes::validateMasqueradedJsonForCreation(const Json::Value &pJson,
-                                                  const std::vector<std::string> &pMasqueradingVector,
-                                                  std::string &err)
-{
-    if(pMasqueradingVector.size() != 3)
-    {
+bool Clientes::validateMasqueradedJsonForCreation(const Json::Value &pJson, const std::vector<std::string> &pMasqueradingVector, std::string &err) {
+    if (pMasqueradingVector.size() != 3) {
         err = "Bad masquerading vector";
         return false;
     }
     try {
-      if(!pMasqueradingVector[0].empty())
-      {
-          if(pJson.isMember(pMasqueradingVector[0]))
-          {
-              if(!validJsonOfField(0, pMasqueradingVector[0], pJson[pMasqueradingVector[0]], err, true))
-                  return false;
-          }
-      }
-      if(!pMasqueradingVector[1].empty())
-      {
-          if(pJson.isMember(pMasqueradingVector[1]))
-          {
-              if(!validJsonOfField(1, pMasqueradingVector[1], pJson[pMasqueradingVector[1]], err, true))
-                  return false;
-          }
-        else
-        {
-            err="The " + pMasqueradingVector[1] + " column cannot be null";
-            return false;
+        if (!pMasqueradingVector[0].empty()) {
+            if (pJson.isMember(pMasqueradingVector[0])) {
+                if (!validJsonOfField(0, pMasqueradingVector[0], pJson[pMasqueradingVector[0]], err, true)) return false;
+            }
         }
-      }
-      if(!pMasqueradingVector[2].empty())
-      {
-          if(pJson.isMember(pMasqueradingVector[2]))
-          {
-              if(!validJsonOfField(2, pMasqueradingVector[2], pJson[pMasqueradingVector[2]], err, true))
-                  return false;
-          }
-        else
-        {
-            err="The " + pMasqueradingVector[2] + " column cannot be null";
-            return false;
+        if (!pMasqueradingVector[1].empty()) {
+            if (pJson.isMember(pMasqueradingVector[1])) {
+                if (!validJsonOfField(1, pMasqueradingVector[1], pJson[pMasqueradingVector[1]], err, true)) return false;
+            } else {
+                err = "The " + pMasqueradingVector[1] + " column cannot be null";
+                return false;
+            }
         }
-      }
-    }
-    catch(const Json::LogicError &e)
-    {
-      err = e.what();
-      return false;
+        if (!pMasqueradingVector[2].empty()) {
+            if (pJson.isMember(pMasqueradingVector[2])) {
+                if (!validJsonOfField(2, pMasqueradingVector[2], pJson[pMasqueradingVector[2]], err, true)) return false;
+            } else {
+                err = "The " + pMasqueradingVector[2] + " column cannot be null";
+                return false;
+            }
+        }
+    } catch (const Json::LogicError &e) {
+        err = e.what();
+        return false;
     }
     return true;
 }
-bool Clientes::validateJsonForUpdate(const Json::Value &pJson, std::string &err)
-{
-    if(pJson.isMember("id"))
-    {
-        if(!validJsonOfField(0, "id", pJson["id"], err, false))
-            return false;
-    }
-    else
-    {
+bool Clientes::validateJsonForUpdate(const Json::Value &pJson, std::string &err) {
+    if (pJson.isMember("id")) {
+        if (!validJsonOfField(0, "id", pJson["id"], err, false)) return false;
+    } else {
         err = "The value of primary key must be set in the json object for update";
         return false;
     }
-    if(pJson.isMember("limite"))
-    {
-        if(!validJsonOfField(1, "limite", pJson["limite"], err, false))
-            return false;
+    if (pJson.isMember("limite")) {
+        if (!validJsonOfField(1, "limite", pJson["limite"], err, false)) return false;
     }
-    if(pJson.isMember("saldo"))
-    {
-        if(!validJsonOfField(2, "saldo", pJson["saldo"], err, false))
-            return false;
+    if (pJson.isMember("saldo")) {
+        if (!validJsonOfField(2, "saldo", pJson["saldo"], err, false)) return false;
     }
     return true;
 }
-bool Clientes::validateMasqueradedJsonForUpdate(const Json::Value &pJson,
-                                                const std::vector<std::string> &pMasqueradingVector,
-                                                std::string &err)
-{
-    if(pMasqueradingVector.size() != 3)
-    {
+bool Clientes::validateMasqueradedJsonForUpdate(const Json::Value &pJson, const std::vector<std::string> &pMasqueradingVector, std::string &err) {
+    if (pMasqueradingVector.size() != 3) {
         err = "Bad masquerading vector";
         return false;
     }
     try {
-      if(!pMasqueradingVector[0].empty() && pJson.isMember(pMasqueradingVector[0]))
-      {
-          if(!validJsonOfField(0, pMasqueradingVector[0], pJson[pMasqueradingVector[0]], err, false))
-              return false;
-      }
-    else
-    {
-        err = "The value of primary key must be set in the json object for update";
+        if (!pMasqueradingVector[0].empty() && pJson.isMember(pMasqueradingVector[0])) {
+            if (!validJsonOfField(0, pMasqueradingVector[0], pJson[pMasqueradingVector[0]], err, false)) return false;
+        } else {
+            err = "The value of primary key must be set in the json object for update";
+            return false;
+        }
+        if (!pMasqueradingVector[1].empty() && pJson.isMember(pMasqueradingVector[1])) {
+            if (!validJsonOfField(1, pMasqueradingVector[1], pJson[pMasqueradingVector[1]], err, false)) return false;
+        }
+        if (!pMasqueradingVector[2].empty() && pJson.isMember(pMasqueradingVector[2])) {
+            if (!validJsonOfField(2, pMasqueradingVector[2], pJson[pMasqueradingVector[2]], err, false)) return false;
+        }
+    } catch (const Json::LogicError &e) {
+        err = e.what();
         return false;
-    }
-      if(!pMasqueradingVector[1].empty() && pJson.isMember(pMasqueradingVector[1]))
-      {
-          if(!validJsonOfField(1, pMasqueradingVector[1], pJson[pMasqueradingVector[1]], err, false))
-              return false;
-      }
-      if(!pMasqueradingVector[2].empty() && pJson.isMember(pMasqueradingVector[2]))
-      {
-          if(!validJsonOfField(2, pMasqueradingVector[2], pJson[pMasqueradingVector[2]], err, false))
-              return false;
-      }
-    }
-    catch(const Json::LogicError &e)
-    {
-      err = e.what();
-      return false;
     }
     return true;
 }
-bool Clientes::validJsonOfField(size_t index,
-                                const std::string &fieldName,
-                                const Json::Value &pJson,
-                                std::string &err,
-                                bool isForCreation)
-{
-    switch(index)
-    {
+bool Clientes::validJsonOfField(size_t index, const std::string &fieldName, const Json::Value &pJson, std::string &err, bool isForCreation) {
+    switch (index) {
         case 0:
-            if(pJson.isNull())
-            {
-                err="The " + fieldName + " column cannot be null";
+            if (pJson.isNull()) {
+                err = "The " + fieldName + " column cannot be null";
                 return false;
             }
-            if(isForCreation)
-            {
-                err="The automatic primary key cannot be set";
+            if (isForCreation) {
+                err = "The automatic primary key cannot be set";
                 return false;
             }
-            if(!pJson.isInt())
-            {
-                err="Type error in the "+fieldName+" field";
+            if (!pJson.isInt()) {
+                err = "Type error in the " + fieldName + " field";
                 return false;
             }
             break;
         case 1:
-            if(pJson.isNull())
-            {
-                err="The " + fieldName + " column cannot be null";
+            if (pJson.isNull()) {
+                err = "The " + fieldName + " column cannot be null";
                 return false;
             }
-            if(!pJson.isInt())
-            {
-                err="Type error in the "+fieldName+" field";
+            if (!pJson.isInt()) {
+                err = "Type error in the " + fieldName + " field";
                 return false;
             }
             break;
         case 2:
-            if(pJson.isNull())
-            {
-                err="The " + fieldName + " column cannot be null";
+            if (pJson.isNull()) {
+                err = "The " + fieldName + " column cannot be null";
                 return false;
             }
-            if(!pJson.isInt())
-            {
-                err="Type error in the "+fieldName+" field";
+            if (!pJson.isInt()) {
+                err = "Type error in the " + fieldName + " field";
                 return false;
             }
             break;
         default:
-            err="Internal error in the server";
+            err = "Internal error in the server";
             return false;
     }
     return true;
