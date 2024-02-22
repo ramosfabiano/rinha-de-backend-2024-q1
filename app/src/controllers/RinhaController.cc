@@ -11,7 +11,7 @@
 // https://github.com/zanfranceschi/rinha-de-backend-2024-q1/tree/main?tab=readme-ov-file#transa%C3%A7%C3%B5es
 
 void RinhaController::getStatement(const HttpRequestPtr& req, std::function<void(const HttpResponsePtr&)>&& callback, std::string clientId) {
-    auto dbClient = drogon::app().getFastDbClient();
+    auto dbClient = drogon::app().getFastDbClient("default");
     if (!dbClient) {
         callback(errorResponse_("Database nao disponivel", HttpStatusCode::k503ServiceUnavailable));
     } else {
@@ -66,7 +66,7 @@ void RinhaController::processTransaction(const HttpRequestPtr& req, std::functio
         callback(errorResponse_("Invalid request", HttpStatusCode::k400BadRequest));
     }
 
-    auto dbClient = drogon::app().getFastDbClient();
+    auto dbClient = drogon::app().getFastDbClient("default");
     if (!dbClient) {
         callback(errorResponse_("Database nao disponivel", HttpStatusCode::k503ServiceUnavailable));
     } else {
@@ -106,7 +106,7 @@ void RinhaController::addClient(const HttpRequestPtr& req, std::function<void(co
     if (!jsonRequest || !validateNewClientRequest_(*jsonRequest)) {
         callback(errorResponse_("Invalid request", HttpStatusCode::k400BadRequest));
     }
-    auto dbClient = drogon::app().getFastDbClient();
+    auto dbClient = drogon::app().getFastDbClient("default");
     if (!dbClient) {
         callback(errorResponse_("Database nao disponivel", HttpStatusCode::k503ServiceUnavailable));
     } else {

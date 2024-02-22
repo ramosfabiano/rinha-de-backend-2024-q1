@@ -22,7 +22,7 @@ services:
           cpus: '0.85'
           memory: '250MB'
 
-  api01:
+  api01: &api01
     container_name: api01
     hostname: api01
     build: 
@@ -37,18 +37,9 @@ services:
           memory: '100MB' 
 
   api02:
+    <<: *api01
     container_name: api02
     hostname: api02
-    build: 
-      context: ./app
-      dockerfile: Dockerfile
-    depends_on:
-      - postgres
-    deploy:
-      resources:
-        limits:
-          cpus: '0.25'
-          memory: '100MB'    
 
   nginx:
     container_name: nginx
