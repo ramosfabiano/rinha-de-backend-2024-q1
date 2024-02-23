@@ -2,13 +2,13 @@
     "app": {
       "daemon": false,
       "relaunch_on_error": true,
+      "threads_num": 1,
       "max_connections": 100000,
-      "max_connections_per_ip": 0      
+      "max_connections_per_ip": 0,
+      "log": {
+        "log_level": "WARN"
+      }
     },
-    "log": {
-      "log_path": "",
-      "log_level": "FATAL"
-    },  
     "listeners": [
       {
         "address": "0.0.0.0",
