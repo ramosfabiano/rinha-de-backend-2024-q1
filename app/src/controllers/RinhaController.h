@@ -6,9 +6,6 @@ using namespace drogon;
 
 class RinhaController : public drogon::HttpController<RinhaController, false> {
    private:
-    std::unordered_set<int> clients_;
-
-    bool checkIfClientExists(const std::string &clientId);
     static bool validateTransactionRequest_(Json::Value &jsonRequest);
     static std::shared_ptr<drogon::HttpResponse> errorResponse_(std::string message, HttpStatusCode status);
 
