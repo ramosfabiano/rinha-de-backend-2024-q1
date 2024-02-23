@@ -68,9 +68,10 @@ void RinhaController::getStatement(const HttpRequestPtr& req, std::function<void
     }
 }
 
-//  curl -i http://localhost:9999/clientes/1/transacoes -X POST -d '{"valor": 100.0, "tipo": "c", "descricao": "Depósito"}' -H "Content-Type:
-//  application/json" curl http://localhost:9999/clientes/1/transacoes -X POST -d '{"valor": 100.0, "tipo": "c", "descricao": "Depósito"}' -H
-//  "Content-Type: application/json" | jq
+//  curl -i http://localhost:9999/clientes/1/transacoes -X POST -d '{"valor": 100.0, "tipo": "c", "descricao": "Depósito"}' -H 
+///    "Content-Type: application/json" 
+// curl http://localhost:9999/clientes/1/transacoes -X POST -d '{"valor": 100.0, "tipo": "c", "descricao": "Depósito"}' -H
+//      "Content-Type: application/json" | jq
 
 void RinhaController::processTransaction(const HttpRequestPtr& req, std::function<void(const HttpResponsePtr&)>&& callback, std::string clientId) {
     int clientIdAsInt;
