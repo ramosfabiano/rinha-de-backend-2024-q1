@@ -119,7 +119,7 @@ void RinhaController::processTransaction(const HttpRequestPtr& req, std::functio
     }
 }
 
-// the list of clients is unchanging so it can be initialized once and stored locally
+// according to the spec the list of clients does not change, so we initialize it once and store it locally
 bool RinhaController::checkIfClientExists(int clientId) {
     if (clients_.empty()) {
         auto dbClient = drogon::app().getFastDbClient("default");
