@@ -5,6 +5,10 @@
       "max_connections": 100000,
       "max_connections_per_ip": 0      
     },
+    "log": {
+      "log_path": "",
+      "log_level": "WARN"
+    },  
     "listeners": [
       {
         "address": "0.0.0.0",
