@@ -9,9 +9,14 @@ class RinhaController : public drogon::HttpController<RinhaController, false> {
     std::unordered_set<int> clients_;
 
     bool checkIfClientExists(int clientId);
+    std::string getFromRedisCache(const std::string& clientId);
+    void setInRedisCache(const std::string& clientId, const std::string& value);
+    void deleteFromRedisCache(const std::string& clientId);
     static bool validateTransactionRequest_(Json::Value &jsonRequest);
     static std::shared_ptr<drogon::HttpResponse> errorResponse_(std::string message, HttpStatusCode status);
-
+    static std::string base64Encode_(const std::string &in);
+    static std::string base64Decode_(const std::string &in);
+    
    public:
     METHOD_LIST_BEGIN
     ADD_METHOD_TO(RinhaController::getStatement, "/clientes/{1}/extrato", drogon::Get);
