@@ -7,6 +7,7 @@
 
 //  curl -i http://localhost:9999/clientes/1/extrato
 //  curl http://localhost:9999/clientes/1/extrato | jq
+//  curl http://localhost:9999/clientes/1/extrato | jq '.saldo.limite'
 
 // https://github.com/zanfranceschi/rinha-de-backend-2024-q1/tree/main?tab=readme-ov-file#transa%C3%A7%C3%B5es
 
