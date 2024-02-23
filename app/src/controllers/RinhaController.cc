@@ -12,31 +12,10 @@ RinhaController::RinhaController() { LOG_INFO << "RinhaController created. "; }
 //  curl http://localhost:9999/clientes/1/extrato | jq '.saldo.limite'
 
 void RinhaController::getStatement(const HttpRequestPtr& req, std::function<void(const HttpResponsePtr&)>&& callback, std::string clientId) {
-    int clientIdAsInt;
-    try {
-        clientIdAsInt = std::stoi(clientId);
-    } catch (std::exception const& ex) {
-        callback(errorResponse_("Requisicao invalida", HttpStatusCode::k400BadRequest));
-        return;
-    }
-
-    if (!checkIfClientExists(clientIdAsInt)) {
+    if (!checkIfClientExists(clientId)) {
         callback(errorResponse_("Cliente nao encontrado", HttpStatusCode::k404NotFound));
         return;
     }
-
-    // check cache
-    auto cachedValue = getFromRedisCache(clientId);
-    if (!cachedValue.empty()) {
-        Json::Value ret;
-        std::stringstream ss;
-        ss << base64Decode_(cachedValue);
-        ss >> ret;
-        auto resp = HttpResponse::newHttpJsonResponse(ret);
-        resp->setStatusCode(HttpStatusCode::k200OK);
-        callback(resp);
-        return;
-    }    
 
     auto dbClient = drogon::app().getFastDbClient("default");
     if (!dbClient) {
@@ -44,7 +23,7 @@ void RinhaController::getStatement(const HttpRequestPtr& req, std::function<void
     } else {
         auto clientsMapper = drogon::orm::Mapper<drogon_model::postgres::Clientes>(dbClient);
         clientsMapper.findByPrimaryKey(
-            clientIdAsInt,
+            std::atoi(clientId.c_str()),
             [this, dbClient, clientId, callback](drogon_model::postgres::Clientes client) {
                 Json::Value ret;
                 // resumo/saldo
@@ -68,10 +47,8 @@ void RinhaController::getStatement(const HttpRequestPtr& req, std::function<void
                             }
                             ret["ultimas_transacoes"] = lastTransactions;
                             auto resp = HttpResponse::newHttpJsonResponse(ret);
-                            resp->setStatusCode(HttpStatusCode::k200OK);                            
+                            resp->setStatusCode(HttpStatusCode::k200OK);
                             callback(resp);
-                            // update redis cache 
-                            setInRedisCache(clientId, base64Encode_(ret.toStyledString()));
                         },
                         [callback](const drogon::orm::DrogonDbException& e) {
                             callback(errorResponse_("Erro obtendo transacoes", HttpStatusCode::k500InternalServerError));
@@ -83,21 +60,13 @@ void RinhaController::getStatement(const HttpRequestPtr& req, std::function<void
     }
 }
 
-//  curl -i http://localhost:9999/clientes/1/transacoes -X POST -d '{"valor": 100.0, "tipo": "c", "descricao": "Depósito"}' -H 
-///    "Content-Type: application/json" 
+//  curl -i http://localhost:9999/clientes/1/transacoes -X POST -d '{"valor": 100.0, "tipo": "c", "descricao": "Depósito"}' -H
+///    "Content-Type: application/json"
 // curl http://localhost:9999/clientes/1/transacoes -X POST -d '{"valor": 100.0, "tipo": "c", "descricao": "Depósito"}' -H
 //      "Content-Type: application/json" | jq
 
 void RinhaController::processTransaction(const HttpRequestPtr& req, std::function<void(const HttpResponsePtr&)>&& callback, std::string clientId) {
-    int clientIdAsInt;
-    try {
-        clientIdAsInt = std::stoi(clientId);
-    } catch (std::exception const& ex) {
-        callback(errorResponse_("Requisicao invalida", HttpStatusCode::k400BadRequest));
-        return;
-    }
-
-    if (!checkIfClientExists(clientIdAsInt)) {
+    if (!checkIfClientExists(clientId)) {
         callback(errorResponse_("Cliente nao encontrado", HttpStatusCode::k404NotFound));
         return;
     }
@@ -112,7 +81,6 @@ void RinhaController::processTransaction(const HttpRequestPtr& req, std::functio
     if (!dbClient) {
         callback(errorResponse_("Database nao disponivel", HttpStatusCode::k503ServiceUnavailable));
     } else {
-
         drogon_model::postgres::Transacoes newTransaction;
         newTransaction.setClientId(std::atoi(clientId.c_str()));
         newTransaction.setValor((*jsonRequest)["valor"].asInt64());
@@ -129,8 +97,6 @@ void RinhaController::processTransaction(const HttpRequestPtr& req, std::functio
                 auto resp = HttpResponse::newHttpJsonResponse(ret);
                 resp->setStatusCode(HttpStatusCode::k200OK);
                 callback(resp);
-                // invalidate cache
-                deleteFromRedisCache(clientId);                         
             },
             [callback](const drogon::orm::DrogonDbException& e) {
                 callback(errorResponse_("Nao foi possivel completar transacao", HttpStatusCode::k422UnprocessableEntity));
@@ -138,8 +104,14 @@ void RinhaController::processTransaction(const HttpRequestPtr& req, std::functio
     }
 }
 
-// according to the spec the list of clients does not change, so we initialize it once and store it locally
-bool RinhaController::checkIfClientExists(int clientId) {
+bool RinhaController::checkIfClientExists(const std::string& clientIdAsStr) {
+    int clientIdAsInt;
+    try {
+        clientIdAsInt = std::stoi(clientIdAsStr);
+    } catch (std::exception const& ex) {
+        return false;
+    }
+
     if (clients_.empty()) {
         auto dbClient = drogon::app().getFastDbClient("default");
         if (!dbClient) {
@@ -154,60 +126,8 @@ bool RinhaController::checkIfClientExists(int clientId) {
             },
             [](const drogon::orm::DrogonDbException& e) { throw std::runtime_error("Erro obtendo clientes"); });
     }
-    return !(clients_.empty() || clients_.find(clientId) == clients_.end());
+    return !(clients_.empty() || clients_.find(clientIdAsInt) == clients_.end());
 }
-
-std::string RinhaController::getFromRedisCache(const std::string& clientId)
-{
-    try {
-        auto keyValue = app().getRedisClient()->execCommandSync<std::string>(
-            [](const drogon::nosql::RedisResult &r) {
-                if (r.isNil())
-                {
-                    return std::string();
-                }
-                return r.asString();
-            },
-            "get %s", clientId.c_str());
-        LOG_DEBUG << "Got key from redis: " << clientId;
-        return keyValue;
-    } catch (const std::exception &e) {
-        LOG_ERROR << "Failed getting data from redis!!! " << e.what();
-    }
-    return std::string();
-}
-
-void RinhaController::setInRedisCache(const std::string& clientId, const std::string& value)
-{
-    std::string redisCommand = "set " + clientId + " " + value;
-    try {
-        auto redisOk = app().getRedisClient()->execCommandSync<bool>(
-            [](const drogon::nosql::RedisResult &r) {
-                return !r.isNil(); 
-            },
-            redisCommand.c_str());
-        LOG_DEBUG << (redisOk? "Added " : "Failed to add ") << "key to redis: " << clientId;
-    } 
-    catch (const std::exception &e) {
-        LOG_ERROR << "Error adding data to redis!!! " << e.what();
-    }
-}
-
-void RinhaController::deleteFromRedisCache(const std::string& clientId)
-{
-    try {
-        auto keyCount = app().getRedisClient()->execCommandSync(
-            [](const drogon::nosql::RedisResult &r) {
-                return r.asInteger();
-            },
-            "del %s", clientId.c_str());
-        LOG_DEBUG << "Deleted key from redis: " << clientId;
-    } 
-    catch (const std::exception &e) {
-        LOG_ERROR << "Error deleting data from redis!!! " << e.what();
-    }       
-}
-
 
 bool RinhaController::validateTransactionRequest_(Json::Value& jsonRequest) {
     try {
@@ -255,7 +175,7 @@ std::string RinhaController::base64Encode_(const std::string& in) {
     while (out.size() % 4) {
         out.push_back('=');
     }
-    return out;    
+    return out;
 }
 
 std::string RinhaController::base64Decode_(const std::string& in) {

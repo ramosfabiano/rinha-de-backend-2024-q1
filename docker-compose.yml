@@ -19,21 +19,9 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.85'
-          memory: '250MB'
+          cpus: '0.95'
+          memory: '200MB'
   
-  redis:
-    container_name: redis
-    hostname: redis
-    build: 
-      context: ./redis
-      dockerfile: Dockerfile
-    deploy:
-      resources:
-        limits:
-          cpus: '0.1'
-          memory: '30MB'
-
   api01: &api01
     container_name: api01
     hostname: api01
@@ -42,12 +30,11 @@ services:
       dockerfile: Dockerfile
     depends_on:
       - postgres
-      - redis
     deploy:
       resources:
         limits:
-          cpus: '0.20'
-          memory: '85MB' 
+          cpus: '0.2'
+          memory: '75MB' 
 
   api02:
     <<: *api01
@@ -69,5 +56,5 @@ services:
       resources:
         limits:
           cpus: '0.15'
-          memory: '100MB'
+          memory: '200MB'
 

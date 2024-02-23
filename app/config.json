@@ -28,17 +28,6 @@
         "is_fast": true,
         "connection_number": 1
       }
-    ],
-    "redis_clients": [
-      {
-          "host": "redis",
-          "port": 6379,
-          "passwd": "",
-          "db": 0,
-          "is_fast": false,
-          "number_of_connections": 1,
-          "timeout": 5.0
-      }
-    ]    
+    ] 
   }
   
