@@ -104,7 +104,7 @@ void RinhaController::processTransaction(const HttpRequestPtr& req, std::functio
 
     auto jsonRequest = req->getJsonObject();
     if (!jsonRequest || !validateTransactionRequest_(*jsonRequest)) {
-        callback(errorResponse_("Requisicao invalida", HttpStatusCode::k400BadRequest));
+        callback(errorResponse_("Requisicao invalida", HttpStatusCode::k422UnprocessableEntity));
         return;
     }
 
