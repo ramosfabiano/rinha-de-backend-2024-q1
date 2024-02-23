@@ -12,7 +12,7 @@ using namespace drogon::orm;
 using Callback = std::function<void(const HttpResponsePtr &)>;
 
 int main(int argc, const char **argv) {
-    // allow for docker-compose to properly start the database/cache...
+    // allow for docker-compose to properly start the database
     std::this_thread::sleep_for(std::chrono::seconds(3));
 
     app().loadConfigFile("/etc/rinha/config.json");
