@@ -45,6 +45,8 @@ class Transacoes {
         static const std::string _tipo;
         static const std::string _descricao;
         static const std::string _realizada_em;
+        static const std::string _saldo_posterior;
+        static const std::string _limite_posterior;
     };
 
     const static int primaryKeyNumber;
@@ -138,7 +140,25 @@ class Transacoes {
     void setRealizadaEm(const ::trantor::Date &pRealizadaEm) noexcept;
     void setRealizadaEmToNull() noexcept;
 
-    static size_t getColumnNumber() noexcept { return 6; }
+    /**  For column saldo_posterior  */
+    /// Get the value of the column saldo_posterior, returns the default value if the column is null
+    const int32_t &getValueOfSaldoPosterior() const noexcept;
+    /// Return a shared_ptr object pointing to the column const value, or an empty shared_ptr object if the column is null
+    const std::shared_ptr<int32_t> &getSaldoPosterior() const noexcept;
+    /// Set the value of the column saldo_posterior
+    void setSaldoPosterior(const int32_t &pSaldoPosterior) noexcept;
+    void setSaldoPosteriorToNull() noexcept;
+
+    /**  For column limite_posterior  */
+    /// Get the value of the column limite_posterior, returns the default value if the column is null
+    const int32_t &getValueOfLimitePosterior() const noexcept;
+    /// Return a shared_ptr object pointing to the column const value, or an empty shared_ptr object if the column is null
+    const std::shared_ptr<int32_t> &getLimitePosterior() const noexcept;
+    /// Set the value of the column limite_posterior
+    void setLimitePosterior(const int32_t &pLimitePosterior) noexcept;
+    void setLimitePosteriorToNull() noexcept;
+
+    static size_t getColumnNumber() noexcept { return 8; }
     static const std::string &getColumnName(size_t index) noexcept(false);
 
     Json::Value toJson() const;
@@ -165,6 +185,8 @@ class Transacoes {
     std::shared_ptr<std::string> tipo_;
     std::shared_ptr<std::string> descricao_;
     std::shared_ptr<::trantor::Date> realizadaEm_;
+    std::shared_ptr<int32_t> saldoPosterior_;
+    std::shared_ptr<int32_t> limitePosterior_;
     struct MetaData {
         const std::string colName_;
         const std::string colType_;
@@ -175,7 +197,7 @@ class Transacoes {
         const bool notNull_;
     };
     static const std::vector<MetaData> metaData_;
-    bool dirtyFlag_[6] = {false};
+    bool dirtyFlag_[8] = {false};
 
    public:
     static const std::string &sqlForFindingByPrimaryKey() {
@@ -214,6 +236,16 @@ class Transacoes {
         if (!dirtyFlag_[5]) {
             needSelection = true;
         }
+        sql += "saldo_posterior,";
+        ++parametersCount;
+        if (!dirtyFlag_[6]) {
+            needSelection = true;
+        }
+        sql += "limite_posterior,";
+        ++parametersCount;
+        if (!dirtyFlag_[7]) {
+            needSelection = true;
+        }
         needSelection = true;
         if (parametersCount > 0) {
             sql[sql.length() - 1] = ')';
@@ -242,6 +274,18 @@ class Transacoes {
             sql.append(placeholderStr, n);
         }
         if (dirtyFlag_[5]) {
+            n = snprintf(placeholderStr, sizeof(placeholderStr), "$%d,", placeholder++);
+            sql.append(placeholderStr, n);
+        } else {
+            sql += "default,";
+        }
+        if (dirtyFlag_[6]) {
+            n = snprintf(placeholderStr, sizeof(placeholderStr), "$%d,", placeholder++);
+            sql.append(placeholderStr, n);
+        } else {
+            sql += "default,";
+        }
+        if (dirtyFlag_[7]) {
             n = snprintf(placeholderStr, sizeof(placeholderStr), "$%d,", placeholder++);
             sql.append(placeholderStr, n);
         } else {

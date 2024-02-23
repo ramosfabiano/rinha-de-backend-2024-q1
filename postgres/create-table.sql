@@ -13,8 +13,9 @@ CREATE TABLE IF NOT EXISTS transacoes (
   valor INTEGER NOT NULL CHECK (valor > 0),
   tipo VARCHAR(1) NOT NULL CHECK (tipo IN ('c', 'd')),
   descricao VARCHAR(10) NOT NULL,
-  realizada_em TIMESTAMPTZ DEFAULT (NOW())
-  --saldo_posterior INTEGER NOT NULL
+  realizada_em TIMESTAMPTZ DEFAULT (NOW()),
+  saldo_posterior INTEGER DEFAULT (0),
+  limite_posterior INTEGER DEFAULT (0)
 );
 
 CREATE INDEX transaction_client_index ON transacoes (client_id ASC);
@@ -25,6 +26,9 @@ CREATE INDEX transaction_date_index ON transacoes (realizada_em DESC);
 */
 CREATE OR REPLACE FUNCTION processa_transacao()
 RETURNS TRIGGER AS $$
+DECLARE
+  saldo_posterior INTEGER;
+  limite_posterior INTEGER;
 BEGIN
   IF NEW.valor <= 0 THEN
     RAISE EXCEPTION 'Valor inválido.';
@@ -35,16 +39,19 @@ BEGIN
   IF NEW.tipo = 'c' THEN
     UPDATE clientes
     SET saldo = saldo + NEW.valor
-    WHERE id = NEW.client_id;
+    WHERE id = NEW.client_id
+    RETURNING saldo,limite INTO saldo_posterior, limite_posterior;
   ELSE 
     IF (SELECT limite + saldo - NEW.valor FROM clientes WHERE id = NEW.client_id) < 0 THEN
       RAISE EXCEPTION 'Saldo+Limite insuficientes.';
     END IF;
     UPDATE clientes
     SET saldo = saldo - NEW.valor
-    WHERE id = NEW.client_id;
+    WHERE id = NEW.client_id
+    RETURNING saldo,limite INTO saldo_posterior, limite_posterior;
   END IF;  
-  --NEW.saldo_posterior = (SELECT saldo FROM clientes WHERE id = NEW.client_id);
+  NEW.saldo_posterior = saldo_posterior;
+  NEW.limite_posterior = limite_posterior;
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;

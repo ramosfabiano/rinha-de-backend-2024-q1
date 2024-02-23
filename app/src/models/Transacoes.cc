@@ -21,17 +21,20 @@ const std::string Transacoes::Cols::_valor = "valor";
 const std::string Transacoes::Cols::_tipo = "tipo";
 const std::string Transacoes::Cols::_descricao = "descricao";
 const std::string Transacoes::Cols::_realizada_em = "realizada_em";
+const std::string Transacoes::Cols::_saldo_posterior = "saldo_posterior";
+const std::string Transacoes::Cols::_limite_posterior = "limite_posterior";
 const std::string Transacoes::primaryKeyName = "id";
 const bool Transacoes::hasPrimaryKey = true;
 const std::string Transacoes::tableName = "transacoes";
 
-const std::vector<typename Transacoes::MetaData> Transacoes::metaData_ = {
-    {"id", "int32_t", "integer", 4, 1, 1, 1},
-    {"client_id", "int32_t", "integer", 4, 0, 0, 1},
-    {"valor", "int32_t", "integer", 4, 0, 0, 1},
-    {"tipo", "std::string", "character varying", 1, 0, 0, 1},
-    {"descricao", "std::string", "character varying", 10, 0, 0, 1},
-    {"realizada_em", "::trantor::Date", "timestamp with time zone", 0, 0, 0, 0}};
+const std::vector<typename Transacoes::MetaData> Transacoes::metaData_ = {{"id", "int32_t", "integer", 4, 1, 1, 1},
+                                                                          {"client_id", "int32_t", "integer", 4, 0, 0, 1},
+                                                                          {"valor", "int32_t", "integer", 4, 0, 0, 1},
+                                                                          {"tipo", "std::string", "character varying", 1, 0, 0, 1},
+                                                                          {"descricao", "std::string", "character varying", 10, 0, 0, 1},
+                                                                          {"realizada_em", "::trantor::Date", "timestamp with time zone", 0, 0, 0, 0},
+                                                                          {"saldo_posterior", "int32_t", "integer", 4, 0, 0, 0},
+                                                                          {"limite_posterior", "int32_t", "integer", 4, 0, 0, 0}};
 const std::string &Transacoes::getColumnName(size_t index) noexcept(false) {
     assert(index < metaData_.size());
     return metaData_[index].colName_;
@@ -71,9 +74,15 @@ Transacoes::Transacoes(const Row &r, const ssize_t indexOffset) noexcept {
                 realizadaEm_ = std::make_shared<::trantor::Date>(t * 1000000 + decimalNum);
             }
         }
+        if (!r["saldo_posterior"].isNull()) {
+            saldoPosterior_ = std::make_shared<int32_t>(r["saldo_posterior"].as<int32_t>());
+        }
+        if (!r["limite_posterior"].isNull()) {
+            limitePosterior_ = std::make_shared<int32_t>(r["limite_posterior"].as<int32_t>());
+        }
     } else {
         size_t offset = (size_t)indexOffset;
-        if (offset + 6 > r.size()) {
+        if (offset + 8 > r.size()) {
             LOG_FATAL << "Invalid SQL result for this model";
             return;
         }
@@ -117,11 +126,19 @@ Transacoes::Transacoes(const Row &r, const ssize_t indexOffset) noexcept {
                 realizadaEm_ = std::make_shared<::trantor::Date>(t * 1000000 + decimalNum);
             }
         }
+        index = offset + 6;
+        if (!r[index].isNull()) {
+            saldoPosterior_ = std::make_shared<int32_t>(r[index].as<int32_t>());
+        }
+        index = offset + 7;
+        if (!r[index].isNull()) {
+            limitePosterior_ = std::make_shared<int32_t>(r[index].as<int32_t>());
+        }
     }
 }
 
 Transacoes::Transacoes(const Json::Value &pJson, const std::vector<std::string> &pMasqueradingVector) noexcept(false) {
-    if (pMasqueradingVector.size() != 6) {
+    if (pMasqueradingVector.size() != 8) {
         LOG_ERROR << "Bad masquerading vector";
         return;
     }
@@ -174,6 +191,18 @@ Transacoes::Transacoes(const Json::Value &pJson, const std::vector<std::string> 
                 }
                 realizadaEm_ = std::make_shared<::trantor::Date>(t * 1000000 + decimalNum);
             }
+        }
+    }
+    if (!pMasqueradingVector[6].empty() && pJson.isMember(pMasqueradingVector[6])) {
+        dirtyFlag_[6] = true;
+        if (!pJson[pMasqueradingVector[6]].isNull()) {
+            saldoPosterior_ = std::make_shared<int32_t>((int32_t)pJson[pMasqueradingVector[6]].asInt64());
+        }
+    }
+    if (!pMasqueradingVector[7].empty() && pJson.isMember(pMasqueradingVector[7])) {
+        dirtyFlag_[7] = true;
+        if (!pJson[pMasqueradingVector[7]].isNull()) {
+            limitePosterior_ = std::make_shared<int32_t>((int32_t)pJson[pMasqueradingVector[7]].asInt64());
         }
     }
 }
@@ -230,10 +259,22 @@ Transacoes::Transacoes(const Json::Value &pJson) noexcept(false) {
             }
         }
     }
+    if (pJson.isMember("saldo_posterior")) {
+        dirtyFlag_[6] = true;
+        if (!pJson["saldo_posterior"].isNull()) {
+            saldoPosterior_ = std::make_shared<int32_t>((int32_t)pJson["saldo_posterior"].asInt64());
+        }
+    }
+    if (pJson.isMember("limite_posterior")) {
+        dirtyFlag_[7] = true;
+        if (!pJson["limite_posterior"].isNull()) {
+            limitePosterior_ = std::make_shared<int32_t>((int32_t)pJson["limite_posterior"].asInt64());
+        }
+    }
 }
 
 void Transacoes::updateByMasqueradedJson(const Json::Value &pJson, const std::vector<std::string> &pMasqueradingVector) noexcept(false) {
-    if (pMasqueradingVector.size() != 6) {
+    if (pMasqueradingVector.size() != 8) {
         LOG_ERROR << "Bad masquerading vector";
         return;
     }
@@ -287,6 +328,18 @@ void Transacoes::updateByMasqueradedJson(const Json::Value &pJson, const std::ve
             }
         }
     }
+    if (!pMasqueradingVector[6].empty() && pJson.isMember(pMasqueradingVector[6])) {
+        dirtyFlag_[6] = true;
+        if (!pJson[pMasqueradingVector[6]].isNull()) {
+            saldoPosterior_ = std::make_shared<int32_t>((int32_t)pJson[pMasqueradingVector[6]].asInt64());
+        }
+    }
+    if (!pMasqueradingVector[7].empty() && pJson.isMember(pMasqueradingVector[7])) {
+        dirtyFlag_[7] = true;
+        if (!pJson[pMasqueradingVector[7]].isNull()) {
+            limitePosterior_ = std::make_shared<int32_t>((int32_t)pJson[pMasqueradingVector[7]].asInt64());
+        }
+    }
 }
 
 void Transacoes::updateByJson(const Json::Value &pJson) noexcept(false) {
@@ -338,6 +391,18 @@ void Transacoes::updateByJson(const Json::Value &pJson) noexcept(false) {
                 }
                 realizadaEm_ = std::make_shared<::trantor::Date>(t * 1000000 + decimalNum);
             }
+        }
+    }
+    if (pJson.isMember("saldo_posterior")) {
+        dirtyFlag_[6] = true;
+        if (!pJson["saldo_posterior"].isNull()) {
+            saldoPosterior_ = std::make_shared<int32_t>((int32_t)pJson["saldo_posterior"].asInt64());
+        }
+    }
+    if (pJson.isMember("limite_posterior")) {
+        dirtyFlag_[7] = true;
+        if (!pJson["limite_posterior"].isNull()) {
+            limitePosterior_ = std::make_shared<int32_t>((int32_t)pJson["limite_posterior"].asInt64());
         }
     }
 }
@@ -424,10 +489,40 @@ void Transacoes::setRealizadaEmToNull() noexcept {
     dirtyFlag_[5] = true;
 }
 
+const int32_t &Transacoes::getValueOfSaldoPosterior() const noexcept {
+    const static int32_t defaultValue = int32_t();
+    if (saldoPosterior_) return *saldoPosterior_;
+    return defaultValue;
+}
+const std::shared_ptr<int32_t> &Transacoes::getSaldoPosterior() const noexcept { return saldoPosterior_; }
+void Transacoes::setSaldoPosterior(const int32_t &pSaldoPosterior) noexcept {
+    saldoPosterior_ = std::make_shared<int32_t>(pSaldoPosterior);
+    dirtyFlag_[6] = true;
+}
+void Transacoes::setSaldoPosteriorToNull() noexcept {
+    saldoPosterior_.reset();
+    dirtyFlag_[6] = true;
+}
+
+const int32_t &Transacoes::getValueOfLimitePosterior() const noexcept {
+    const static int32_t defaultValue = int32_t();
+    if (limitePosterior_) return *limitePosterior_;
+    return defaultValue;
+}
+const std::shared_ptr<int32_t> &Transacoes::getLimitePosterior() const noexcept { return limitePosterior_; }
+void Transacoes::setLimitePosterior(const int32_t &pLimitePosterior) noexcept {
+    limitePosterior_ = std::make_shared<int32_t>(pLimitePosterior);
+    dirtyFlag_[7] = true;
+}
+void Transacoes::setLimitePosteriorToNull() noexcept {
+    limitePosterior_.reset();
+    dirtyFlag_[7] = true;
+}
+
 void Transacoes::updateId(const uint64_t id) {}
 
 const std::vector<std::string> &Transacoes::insertColumns() noexcept {
-    static const std::vector<std::string> inCols = {"client_id", "valor", "tipo", "descricao", "realizada_em"};
+    static const std::vector<std::string> inCols = {"client_id", "valor", "tipo", "descricao", "realizada_em", "saldo_posterior", "limite_posterior"};
     return inCols;
 }
 
@@ -467,6 +562,20 @@ void Transacoes::outputArgs(drogon::orm::internal::SqlBinder &binder) const {
             binder << nullptr;
         }
     }
+    if (dirtyFlag_[6]) {
+        if (getSaldoPosterior()) {
+            binder << getValueOfSaldoPosterior();
+        } else {
+            binder << nullptr;
+        }
+    }
+    if (dirtyFlag_[7]) {
+        if (getLimitePosterior()) {
+            binder << getValueOfLimitePosterior();
+        } else {
+            binder << nullptr;
+        }
+    }
 }
 
 const std::vector<std::string> Transacoes::updateColumns() const {
@@ -485,6 +594,12 @@ const std::vector<std::string> Transacoes::updateColumns() const {
     }
     if (dirtyFlag_[5]) {
         ret.push_back(getColumnName(5));
+    }
+    if (dirtyFlag_[6]) {
+        ret.push_back(getColumnName(6));
+    }
+    if (dirtyFlag_[7]) {
+        ret.push_back(getColumnName(7));
     }
     return ret;
 }
@@ -525,6 +640,20 @@ void Transacoes::updateArgs(drogon::orm::internal::SqlBinder &binder) const {
             binder << nullptr;
         }
     }
+    if (dirtyFlag_[6]) {
+        if (getSaldoPosterior()) {
+            binder << getValueOfSaldoPosterior();
+        } else {
+            binder << nullptr;
+        }
+    }
+    if (dirtyFlag_[7]) {
+        if (getLimitePosterior()) {
+            binder << getValueOfLimitePosterior();
+        } else {
+            binder << nullptr;
+        }
+    }
 }
 Json::Value Transacoes::toJson() const {
     Json::Value ret;
@@ -558,12 +687,22 @@ Json::Value Transacoes::toJson() const {
     } else {
         ret["realizada_em"] = Json::Value();
     }
+    if (getSaldoPosterior()) {
+        ret["saldo_posterior"] = getValueOfSaldoPosterior();
+    } else {
+        ret["saldo_posterior"] = Json::Value();
+    }
+    if (getLimitePosterior()) {
+        ret["limite_posterior"] = getValueOfLimitePosterior();
+    } else {
+        ret["limite_posterior"] = Json::Value();
+    }
     return ret;
 }
 
 Json::Value Transacoes::toMasqueradedJson(const std::vector<std::string> &pMasqueradingVector) const {
     Json::Value ret;
-    if (pMasqueradingVector.size() == 6) {
+    if (pMasqueradingVector.size() == 8) {
         if (!pMasqueradingVector[0].empty()) {
             if (getId()) {
                 ret[pMasqueradingVector[0]] = getValueOfId();
@@ -606,6 +745,20 @@ Json::Value Transacoes::toMasqueradedJson(const std::vector<std::string> &pMasqu
                 ret[pMasqueradingVector[5]] = Json::Value();
             }
         }
+        if (!pMasqueradingVector[6].empty()) {
+            if (getSaldoPosterior()) {
+                ret[pMasqueradingVector[6]] = getValueOfSaldoPosterior();
+            } else {
+                ret[pMasqueradingVector[6]] = Json::Value();
+            }
+        }
+        if (!pMasqueradingVector[7].empty()) {
+            if (getLimitePosterior()) {
+                ret[pMasqueradingVector[7]] = getValueOfLimitePosterior();
+            } else {
+                ret[pMasqueradingVector[7]] = Json::Value();
+            }
+        }
         return ret;
     }
     LOG_ERROR << "Masquerade failed";
@@ -638,6 +791,16 @@ Json::Value Transacoes::toMasqueradedJson(const std::vector<std::string> &pMasqu
         ret["realizada_em"] = getRealizadaEm()->toDbStringLocal();
     } else {
         ret["realizada_em"] = Json::Value();
+    }
+    if (getSaldoPosterior()) {
+        ret["saldo_posterior"] = getValueOfSaldoPosterior();
+    } else {
+        ret["saldo_posterior"] = Json::Value();
+    }
+    if (getLimitePosterior()) {
+        ret["limite_posterior"] = getValueOfLimitePosterior();
+    } else {
+        ret["limite_posterior"] = Json::Value();
     }
     return ret;
 }
@@ -673,10 +836,16 @@ bool Transacoes::validateJsonForCreation(const Json::Value &pJson, std::string &
     if (pJson.isMember("realizada_em")) {
         if (!validJsonOfField(5, "realizada_em", pJson["realizada_em"], err, true)) return false;
     }
+    if (pJson.isMember("saldo_posterior")) {
+        if (!validJsonOfField(6, "saldo_posterior", pJson["saldo_posterior"], err, true)) return false;
+    }
+    if (pJson.isMember("limite_posterior")) {
+        if (!validJsonOfField(7, "limite_posterior", pJson["limite_posterior"], err, true)) return false;
+    }
     return true;
 }
 bool Transacoes::validateMasqueradedJsonForCreation(const Json::Value &pJson, const std::vector<std::string> &pMasqueradingVector, std::string &err) {
-    if (pMasqueradingVector.size() != 6) {
+    if (pMasqueradingVector.size() != 8) {
         err = "Bad masquerading vector";
         return false;
     }
@@ -723,6 +892,16 @@ bool Transacoes::validateMasqueradedJsonForCreation(const Json::Value &pJson, co
                 if (!validJsonOfField(5, pMasqueradingVector[5], pJson[pMasqueradingVector[5]], err, true)) return false;
             }
         }
+        if (!pMasqueradingVector[6].empty()) {
+            if (pJson.isMember(pMasqueradingVector[6])) {
+                if (!validJsonOfField(6, pMasqueradingVector[6], pJson[pMasqueradingVector[6]], err, true)) return false;
+            }
+        }
+        if (!pMasqueradingVector[7].empty()) {
+            if (pJson.isMember(pMasqueradingVector[7])) {
+                if (!validJsonOfField(7, pMasqueradingVector[7], pJson[pMasqueradingVector[7]], err, true)) return false;
+            }
+        }
     } catch (const Json::LogicError &e) {
         err = e.what();
         return false;
@@ -751,10 +930,16 @@ bool Transacoes::validateJsonForUpdate(const Json::Value &pJson, std::string &er
     if (pJson.isMember("realizada_em")) {
         if (!validJsonOfField(5, "realizada_em", pJson["realizada_em"], err, false)) return false;
     }
+    if (pJson.isMember("saldo_posterior")) {
+        if (!validJsonOfField(6, "saldo_posterior", pJson["saldo_posterior"], err, false)) return false;
+    }
+    if (pJson.isMember("limite_posterior")) {
+        if (!validJsonOfField(7, "limite_posterior", pJson["limite_posterior"], err, false)) return false;
+    }
     return true;
 }
 bool Transacoes::validateMasqueradedJsonForUpdate(const Json::Value &pJson, const std::vector<std::string> &pMasqueradingVector, std::string &err) {
-    if (pMasqueradingVector.size() != 6) {
+    if (pMasqueradingVector.size() != 8) {
         err = "Bad masquerading vector";
         return false;
     }
@@ -779,6 +964,12 @@ bool Transacoes::validateMasqueradedJsonForUpdate(const Json::Value &pJson, cons
         }
         if (!pMasqueradingVector[5].empty() && pJson.isMember(pMasqueradingVector[5])) {
             if (!validJsonOfField(5, pMasqueradingVector[5], pJson[pMasqueradingVector[5]], err, false)) return false;
+        }
+        if (!pMasqueradingVector[6].empty() && pJson.isMember(pMasqueradingVector[6])) {
+            if (!validJsonOfField(6, pMasqueradingVector[6], pJson[pMasqueradingVector[6]], err, false)) return false;
+        }
+        if (!pMasqueradingVector[7].empty() && pJson.isMember(pMasqueradingVector[7])) {
+            if (!validJsonOfField(7, pMasqueradingVector[7], pJson[pMasqueradingVector[7]], err, false)) return false;
         }
     } catch (const Json::LogicError &e) {
         err = e.what();
@@ -859,6 +1050,24 @@ bool Transacoes::validJsonOfField(size_t index, const std::string &fieldName, co
                 return true;
             }
             if (!pJson.isString()) {
+                err = "Type error in the " + fieldName + " field";
+                return false;
+            }
+            break;
+        case 6:
+            if (pJson.isNull()) {
+                return true;
+            }
+            if (!pJson.isInt()) {
+                err = "Type error in the " + fieldName + " field";
+                return false;
+            }
+            break;
+        case 7:
+            if (pJson.isNull()) {
+                return true;
+            }
+            if (!pJson.isInt()) {
                 err = "Type error in the " + fieldName + " field";
                 return false;
             }

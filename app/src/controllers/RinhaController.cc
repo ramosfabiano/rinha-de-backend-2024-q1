@@ -97,21 +97,16 @@ void RinhaController::processTransaction(const HttpRequestPtr& req, std::functio
                 auto transactionsMapper = drogon::orm::Mapper<drogon_model::postgres::Transacoes>(dbClient);
                 transactionsMapper.insert(
                     newTransaction,
-                    [client, callback](drogon_model::postgres::Transacoes transaction) {
+                    [callback](drogon_model::postgres::Transacoes transaction) {
                         Json::Value ret;
-                        ret["limite"] = client.getValueOfLimite();
-                        ret["saldo"] = client.getValueOfSaldo() + transaction.getValueOfValor() * (transaction.getValueOfTipo() == "c" ? 1 : -1);
+                        ret["limite"] = transaction.getValueOfLimitePosterior();
+                        ret["saldo"] = transaction.getValueOfSaldoPosterior();
                         auto resp = HttpResponse::newHttpJsonResponse(ret);
                         resp->setStatusCode(HttpStatusCode::k200OK);
                         callback(resp);
                     },
-                    [client, callback](const drogon::orm::DrogonDbException& e) {
-                        Json::Value ret;
-                        ret["limite"] = client.getValueOfLimite();
-                        ret["saldo"] = client.getValueOfSaldo();
-                        auto resp = HttpResponse::newHttpJsonResponse(ret);
-                        resp->setStatusCode(HttpStatusCode::k422UnprocessableEntity);
-                        callback(resp);
+                    [callback](const drogon::orm::DrogonDbException& e) {
+                        callback(errorResponse_("Nao foi possivel completar transacao", HttpStatusCode::k422UnprocessableEntity));
                     });
             },
             [callback](const drogon::orm::DrogonDbException& e) {
