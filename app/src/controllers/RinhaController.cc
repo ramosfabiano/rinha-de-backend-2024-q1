@@ -5,6 +5,8 @@
 
 #include <sstream>
 
+RinhaController::RinhaController() { std::cout << "RinhaController created. " << std::endl; }
+
 //  curl -i http://localhost:9999/clientes/1/extrato
 //  curl http://localhost:9999/clientes/1/extrato | jq
 //  curl http://localhost:9999/clientes/1/extrato | jq '.saldo.limite'
@@ -15,6 +17,11 @@ void RinhaController::getStatement(const HttpRequestPtr& req, std::function<void
         clientIdAsInt = std::stoi(clientId);
     } catch (std::exception const& ex) {
         callback(errorResponse_("Requisicao invalida", HttpStatusCode::k400BadRequest));
+        return;
+    }
+
+    if (!checkIfClientExists(clientIdAsInt)) {
+        callback(errorResponse_("Cliente nao encontrado", HttpStatusCode::k404NotFound));
         return;
     }
 
@@ -74,6 +81,11 @@ void RinhaController::processTransaction(const HttpRequestPtr& req, std::functio
         return;
     }
 
+    if (!checkIfClientExists(clientIdAsInt)) {
+        callback(errorResponse_("Cliente nao encontrado", HttpStatusCode::k404NotFound));
+        return;
+    }
+
     auto jsonRequest = req->getJsonObject();
     if (!jsonRequest || !validateTransactionRequest_(*jsonRequest)) {
         callback(errorResponse_("Requisicao invalida", HttpStatusCode::k400BadRequest));
@@ -84,35 +96,46 @@ void RinhaController::processTransaction(const HttpRequestPtr& req, std::functio
     if (!dbClient) {
         callback(errorResponse_("Database nao disponivel", HttpStatusCode::k503ServiceUnavailable));
     } else {
-        auto clientsMapper = drogon::orm::Mapper<drogon_model::postgres::Clientes>(dbClient);
-        clientsMapper.findByPrimaryKey(
-            clientIdAsInt,
-            [dbClient, clientId, jsonRequest, callback](drogon_model::postgres::Clientes client) {
-                drogon_model::postgres::Transacoes newTransaction;
-                newTransaction.setClientId(std::atoi(clientId.c_str()));
-                newTransaction.setValor((*jsonRequest)["valor"].asInt64());
-                newTransaction.setTipo((*jsonRequest)["tipo"].asString());
-                newTransaction.setDescricao((*jsonRequest)["descricao"].asString());
+        drogon_model::postgres::Transacoes newTransaction;
+        newTransaction.setClientId(std::atoi(clientId.c_str()));
+        newTransaction.setValor((*jsonRequest)["valor"].asInt64());
+        newTransaction.setTipo((*jsonRequest)["tipo"].asString());
+        newTransaction.setDescricao((*jsonRequest)["descricao"].asString());
 
-                auto transactionsMapper = drogon::orm::Mapper<drogon_model::postgres::Transacoes>(dbClient);
-                transactionsMapper.insert(
-                    newTransaction,
-                    [callback](drogon_model::postgres::Transacoes transaction) {
-                        Json::Value ret;
-                        ret["limite"] = transaction.getValueOfLimitePosterior();
-                        ret["saldo"] = transaction.getValueOfSaldoPosterior();
-                        auto resp = HttpResponse::newHttpJsonResponse(ret);
-                        resp->setStatusCode(HttpStatusCode::k200OK);
-                        callback(resp);
-                    },
-                    [callback](const drogon::orm::DrogonDbException& e) {
-                        callback(errorResponse_("Nao foi possivel completar transacao", HttpStatusCode::k422UnprocessableEntity));
-                    });
+        auto transactionsMapper = drogon::orm::Mapper<drogon_model::postgres::Transacoes>(dbClient);
+        transactionsMapper.insert(
+            newTransaction,
+            [callback](drogon_model::postgres::Transacoes transaction) {
+                Json::Value ret;
+                ret["limite"] = transaction.getValueOfLimitePosterior();
+                ret["saldo"] = transaction.getValueOfSaldoPosterior();
+                auto resp = HttpResponse::newHttpJsonResponse(ret);
+                resp->setStatusCode(HttpStatusCode::k200OK);
+                callback(resp);
             },
             [callback](const drogon::orm::DrogonDbException& e) {
-                callback(errorResponse_("Cliente nao encontrado", HttpStatusCode::k404NotFound));
+                callback(errorResponse_("Nao foi possivel completar transacao", HttpStatusCode::k422UnprocessableEntity));
             });
     }
+}
+
+// the list of clients is unchanging so it can be initialized once and stored locally
+bool RinhaController::checkIfClientExists(int clientId) {
+    if (clients_.empty()) {
+        auto dbClient = drogon::app().getFastDbClient("default");
+        if (!dbClient) {
+            throw std::runtime_error("Database nao disponivel");
+        }
+        auto clientsMapper = drogon::orm::Mapper<drogon_model::postgres::Clientes>(dbClient);
+        clientsMapper.findAll(
+            [this](std::vector<drogon_model::postgres::Clientes> clients) {
+                for (const auto& c : clients) {
+                    clients_.insert(c.getValueOfId());
+                }
+            },
+            [](const drogon::orm::DrogonDbException& e) { throw std::runtime_error("Erro obtendo clientes"); });
+    }
+    return !(clients_.empty() || clients_.find(clientId) == clients_.end());
 }
 
 std::shared_ptr<drogon::HttpResponse> RinhaController::errorResponse_(std::string message, HttpStatusCode status) {
