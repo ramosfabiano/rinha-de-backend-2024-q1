@@ -37,3 +37,23 @@ Para terminar a execução:
 ```bash
 $ podman-compose -f docker-compose.yml down
 ```
+
+## Execução dos Testes de Carga
+
+Temos nesse repositório uma cópia dos [testes de carga originais](https://github.com/zanfranceschi/rinha-de-backend-2024-q1/tree/main/load-test) para facilitar o trabalho de desenvolvimento.
+
+Para executar os testes, o primeiro passo é "levantar" a aplicação.
+
+Em seguida instalar o `gatling`, caso o mesmo não esteja disponível. A variável `INSTALL_DIR` pode ser customizada. O valor padrão é `$HOME/bin`.
+
+```bash
+$ cd stress_test
+$ ./install_gatling.sh
+```
+
+Em seguida execute os testes.  A variável `GATLING_HOME` no script pode ser customizada para apontar para a instalação do  `gatling`.  O valor padrão é `$HOME/bin/gatling-3.9.5/`.
+
+```bash
+$ cd stress_test
+$ ./executar-teste-local.sh
+```
