@@ -67,7 +67,6 @@ void RinhaController::processTransaction(const HttpRequestPtr& req, std::functio
         callback(errorResponse_("Requisicao invalida", HttpStatusCode::k422UnprocessableEntity));
         return;
     }
-
     auto dbClient = drogon::app().getFastDbClient("default");
     if (!dbClient) {
         callback(errorResponse_("Database nao disponivel", HttpStatusCode::k503ServiceUnavailable));
@@ -108,14 +107,18 @@ bool RinhaController::validateTransactionRequest_(Json::Value& jsonRequest) {
         if (!jsonRequest || !jsonRequest.isMember("valor") || !jsonRequest.isMember("tipo") || !jsonRequest.isMember("descricao")) {
             return false;
         }
-        if (jsonRequest["valor"].asInt() <= 0) {
-            return false;
-        }
+        std::string valor = jsonRequest["valor"].asString();
+        for (char const &c : valor) {
+            if (!std::isdigit(c)) {
+                return false;
+            }
+        }        
         std::string type = jsonRequest["tipo"].asString();
         if (type != "c" && type != "d") {
             return false;
         }
-        if (jsonRequest["descricao"].asString().empty()) {
+        std::string description = jsonRequest["descricao"].asString();
+        if (description.empty() || description.size() > 10){
             return false;
         }
     } catch (std::exception& e) {
