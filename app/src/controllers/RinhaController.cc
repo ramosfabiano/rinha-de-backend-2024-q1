@@ -9,16 +9,20 @@
 //  curl http://localhost:9999/clientes/1/extrato | jq
 //  curl http://localhost:9999/clientes/1/extrato | jq '.saldo.limite'
 
-// https://github.com/zanfranceschi/rinha-de-backend-2024-q1/tree/main?tab=readme-ov-file#transa%C3%A7%C3%B5es
-
 void RinhaController::getStatement(const HttpRequestPtr& req, std::function<void(const HttpResponsePtr&)>&& callback, std::string clientId) {
+    int clientIdAsInt;
+    try {
+        clientIdAsInt = std::stoi(clientId);
+    } catch (std::exception const& ex) {
+        callback(errorResponse_("Requisicao invalida", HttpStatusCode::k400BadRequest));
+    }
     auto dbClient = drogon::app().getFastDbClient("default");
     if (!dbClient) {
         callback(errorResponse_("Database nao disponivel", HttpStatusCode::k503ServiceUnavailable));
     } else {
         auto clientsMapper = drogon::orm::Mapper<drogon_model::postgres::Clientes>(dbClient);
         clientsMapper.findByPrimaryKey(
-            std::atoi(clientId.c_str()),
+            clientIdAsInt,
             [dbClient, clientId, callback](drogon_model::postgres::Clientes client) {
                 Json::Value ret;
                 // resumo/saldo
@@ -59,12 +63,10 @@ void RinhaController::getStatement(const HttpRequestPtr& req, std::function<void
 //  application/json" curl http://localhost:9999/clientes/1/transacoes -X POST -d '{"valor": 100.0, "tipo": "c", "descricao": "Depósito"}' -H
 //  "Content-Type: application/json" | jq
 
-// https://github.com/zanfranceschi/rinha-de-backend-2024-q1/tree/main?tab=readme-ov-file#extrato
-
 void RinhaController::processTransaction(const HttpRequestPtr& req, std::function<void(const HttpResponsePtr&)>&& callback, std::string clientId) {
     auto jsonRequest = req->getJsonObject();
     if (!jsonRequest || !validateTransactionRequest_(*jsonRequest)) {
-        callback(errorResponse_("Invalid request", HttpStatusCode::k400BadRequest));
+        callback(errorResponse_("Requisicao invalida", HttpStatusCode::k400BadRequest));
     }
 
     auto dbClient = drogon::app().getFastDbClient("default");
@@ -84,13 +86,21 @@ void RinhaController::processTransaction(const HttpRequestPtr& req, std::functio
                 auto transactionsMapper = drogon::orm::Mapper<drogon_model::postgres::Transacoes>(dbClient);
                 transactionsMapper.insert(
                     newTransaction,
-                    [callback](drogon_model::postgres::Transacoes transaction) {
-                        std::stringstream errMsg;
-                        errMsg << "Transaction added successfully id=" << transaction.getValueOfId();
-                        callback(errorResponse_(errMsg.str(), HttpStatusCode::k200OK));
+                    [client, callback](drogon_model::postgres::Transacoes transaction) {
+                        Json::Value ret;
+                        ret["limite"] = client.getValueOfLimite();
+                        ret["saldo"] = client.getValueOfSaldo() + transaction.getValueOfValor() * (transaction.getValueOfTipo() == "c" ? 1 : -1);
+                        auto resp = HttpResponse::newHttpJsonResponse(ret);
+                        resp->setStatusCode(HttpStatusCode::k200OK);
+                        callback(resp);
                     },
-                    [callback](const drogon::orm::DrogonDbException& e) {
-                        callback(errorResponse_("Error adding transaction: no funds", HttpStatusCode::k422UnprocessableEntity));
+                    [client, callback](const drogon::orm::DrogonDbException& e) {
+                        Json::Value ret;
+                        ret["limite"] = client.getValueOfLimite();
+                        ret["saldo"] = client.getValueOfSaldo();
+                        auto resp = HttpResponse::newHttpJsonResponse(ret);
+                        resp->setStatusCode(HttpStatusCode::k422UnprocessableEntity);
+                        callback(resp);
                     });
             },
             [callback](const drogon::orm::DrogonDbException& e) {
@@ -105,7 +115,7 @@ void RinhaController::processTransaction(const HttpRequestPtr& req, std::functio
 void RinhaController::addClient(const HttpRequestPtr& req, std::function<void(const HttpResponsePtr&)>&& callback) {
     auto jsonRequest = req->getJsonObject();
     if (!jsonRequest || !validateNewClientRequest_(*jsonRequest)) {
-        callback(errorResponse_("Invalid request", HttpStatusCode::k400BadRequest));
+        callback(errorResponse_("Requisicao invalida", HttpStatusCode::k400BadRequest));
     }
     auto dbClient = drogon::app().getFastDbClient("default");
     if (!dbClient) {
@@ -121,14 +131,14 @@ void RinhaController::addClient(const HttpRequestPtr& req, std::function<void(co
                 newClient,
                 [callback](drogon_model::postgres::Clientes client) {
                     std::stringstream errMsg;
-                    errMsg << "Client added successfully id=" << client.getValueOfId();
+                    errMsg << "Client adicionado id=" << client.getValueOfId();
                     callback(errorResponse_(errMsg.str(), HttpStatusCode::k200OK));
                 },
                 [callback](const drogon::orm::DrogonDbException& e) {
                     callback(errorResponse_("Failed to add client", HttpStatusCode::k422UnprocessableEntity));
                 });
         } catch (const std::exception& e) {
-            callback(errorResponse_("Failed to add client", HttpStatusCode::k422UnprocessableEntity));
+            callback(errorResponse_("Falha ao adicionar cliente", HttpStatusCode::k422UnprocessableEntity));
         }
     }
 }
