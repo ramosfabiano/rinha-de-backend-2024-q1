@@ -11,8 +11,6 @@ class RinhaController : public drogon::HttpController<RinhaController, false> {
     bool checkIfClientExists(const std::string &clientId);
     static bool validateTransactionRequest_(Json::Value &jsonRequest);
     static std::shared_ptr<drogon::HttpResponse> errorResponse_(std::string message, HttpStatusCode status);
-    static std::string base64Encode_(const std::string &in);
-    static std::string base64Decode_(const std::string &in);
 
    public:
     METHOD_LIST_BEGIN
