@@ -5,7 +5,7 @@
 <br />
 <img src="https://upload.wikimedia.org/wikipedia/commons/2/29/Postgresql_elephant.svg" alt="logo postgres" width="300" height="auto">
 <br />
-<img src="https://github.com/an-tao/drogon/wiki/images/drogon-white17.jpg" alt="logo drogon" width="300" height="auto">
+<img src="https://github.com/an-tao/drogon/wiki/images/drogon-white17.jpg" alt="logo drogon" width="900" height="auto">
 <br />
 
 ## Fabiano Ramos
