@@ -3,7 +3,7 @@
 TAG="v1"
 
 podman compose build --no-cache
-if $? -ne 0; then
+if [ $? -ne 0 ]; then
   echo "Build failed"
   exit -1
 fi
