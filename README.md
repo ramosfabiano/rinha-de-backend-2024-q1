@@ -1,8 +1,6 @@
 # Rinha de Backend
 
-Este pequeno projeto foi inspirado pelo desafio proposto na [Rinha de Backend 2024 Q1](https://github.com/zanfranceschi/rinha-de-backend-2024-q1).
-
-Em resumo, o objetivo é implementar uma API simples, capaz de sobreviver a um teste de estresse usando pouquíssimos recursos.
+Este pequeno projeto contém a implementação [submetida](https://github.com/zanfranceschi/rinha-de-backend-2024-q1/tree/main/participantes/ramosfabiano) ao desafio proposto na [Rinha de Backend 2024 Q1](https://github.com/zanfranceschi/rinha-de-backend-2024-q1).
 
 ## Tech Stack
 
