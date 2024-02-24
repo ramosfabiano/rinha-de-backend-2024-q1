@@ -10,8 +10,6 @@ fi
 
 podman login docker.io -u ramosfabiano -p $DOCKER_PASSWORD
 
-IMAGE_LIST=$(podman image list | grep "localhost/rinha-de-backend-2024-q1" | awk '{print $1":"$2}' | cut -d '_' -f 2 | cut -d ':' -f 1)
-
-for i in $IMAGE_LIST; do
-  podman push localhost/rinha-de-backend-2024-q1_$i ramosfabiano/rinha-de-backend-2024-q1_$i:$TAG
-done
+podman push localhost/rinha-de-backend-2024-q1_postgres ramosfabiano/rinha-de-backend-2024-q1_postgres:$TAG
+podman push localhost/rinha-de-backend-2024-q1_nginx ramosfabiano/rinha-de-backend-2024-q1_nginx:$TAG
+podman push localhost/rinha-de-backend-2024-q1_api01 ramosfabiano/rinha-de-backend-2024-q1_api:$TAG
