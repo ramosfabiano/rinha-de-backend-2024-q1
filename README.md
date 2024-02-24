@@ -57,3 +57,6 @@ Em seguida execute os testes.  A variável `GATLING_HOME` no script pode ser cus
 $ cd stress_test
 $ ./executar-teste-local.sh
 ```
+
+![resumo1](images/result1.png)
+![resumo2](images/result2.png)
