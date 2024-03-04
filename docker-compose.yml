@@ -8,20 +8,34 @@ networks:
     
 services:
 
-  postgres:
-    container_name: postgres
-    hostname: postgres
+  postgres01:
+    container_name: postgres01
+    hostname: postgres01
     build: 
       context: ./postgres
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.1
     env_file:
       - ./postgres/vars.env
     deploy:
       resources:
         limits:
-          cpus: '0.95'
-          memory: '200MB'
-  
+          cpus: '0.48'
+          memory: '100MB'
+
+  postgres02:
+    container_name: postgres02
+    hostname: postgres02
+    build: 
+      context: ./postgres
+      dockerfile: Dockerfile.2
+    env_file:
+      - ./postgres/vars.env
+    deploy:
+      resources:
+        limits:
+          cpus: '0.47'
+          memory: '100MB'
+
   api01: &api01
     container_name: api01
     hostname: api01

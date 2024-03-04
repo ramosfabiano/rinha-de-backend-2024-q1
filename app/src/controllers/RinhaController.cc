@@ -13,7 +13,7 @@ RinhaController::RinhaController() { std::cout << "RinhaController created. " <<
 //  curl http://localhost:9999/clientes/1/extrato | jq '.saldo.limite'
 
 void RinhaController::getStatement(const HttpRequestPtr& req, std::function<void(const HttpResponsePtr&)>&& callback, std::string clientId) {
-    auto dbClient = drogon::app().getFastDbClient("default");
+    auto dbClient = drogon::app().getFastDbClient(dbNameFromClientId_(clientId));
     if (!dbClient) {
         callback(errorResponse_("Database nao disponivel", HttpStatusCode::k503ServiceUnavailable));
     } else {
@@ -67,7 +67,7 @@ void RinhaController::processTransaction(const HttpRequestPtr& req, std::functio
         callback(errorResponse_("Requisicao invalida", HttpStatusCode::k422UnprocessableEntity));
         return;
     }
-    auto dbClient = drogon::app().getFastDbClient("default");
+    auto dbClient = drogon::app().getFastDbClient(dbNameFromClientId_(clientId));
     if (!dbClient) {
         callback(errorResponse_("Database nao disponivel", HttpStatusCode::k503ServiceUnavailable));
     } else {
@@ -134,3 +134,18 @@ std::shared_ptr<drogon::HttpResponse> RinhaController::errorResponse_(std::strin
     resp->setStatusCode(status);
     return resp;
 }
+
+std::string RinhaController::dbNameFromClientId_(std::string clientId) {
+    int clientIdInt;
+    try {
+        clientIdInt = std::atoi(clientId.c_str()) % 2;
+    } catch (std::exception& e) {
+        return "postgres01";
+    }
+    if (clientIdInt == 0) {
+        return "postgres02";
+    } else {
+        return "postgres01";
+    }
+}
+

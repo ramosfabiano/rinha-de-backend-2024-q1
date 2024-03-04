@@ -8,6 +8,7 @@ class RinhaController : public drogon::HttpController<RinhaController, false> {
    private:
     static bool validateTransactionRequest_(Json::Value &jsonRequest);
     static std::shared_ptr<drogon::HttpResponse> errorResponse_(std::string message, HttpStatusCode status);
+    static std::string dbNameFromClientId_(std::string clientId);
 
    public:
     METHOD_LIST_BEGIN
