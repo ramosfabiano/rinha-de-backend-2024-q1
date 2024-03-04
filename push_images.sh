@@ -1,6 +1,6 @@
 #!/bin/bash
 
-TAG="v1"
+TAG="v3"
 
 podman compose build --no-cache
 if [ $? -ne 0 ]; then
