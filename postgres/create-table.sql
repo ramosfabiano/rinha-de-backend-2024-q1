@@ -10,8 +10,8 @@ CREATE TABLE IF NOT EXISTS clientes (
 CREATE TABLE IF NOT EXISTS transacoes (
   id SERIAL PRIMARY KEY,  
   client_id INTEGER NOT NULL REFERENCES clientes(id),
-  valor INTEGER NOT NULL CHECK (valor > 0),
-  tipo VARCHAR(1) NOT NULL CHECK (tipo IN ('c', 'd')),
+  valor INTEGER NOT NULL,
+  tipo VARCHAR(1) NOT NULL,
   descricao VARCHAR(10) NOT NULL,
   realizada_em TIMESTAMPTZ DEFAULT (NOW()),
   saldo_posterior INTEGER DEFAULT (0),
@@ -36,6 +36,7 @@ BEGIN
   IF NEW.tipo NOT IN ('c', 'd') THEN
     RAISE EXCEPTION 'Tipo de transação inválido.';
   END IF;  
+  PERFORM pg_advisory_xact_lock(NEW.client_id);
   IF NEW.tipo = 'c' THEN
     UPDATE clientes
     SET saldo = saldo + NEW.valor
