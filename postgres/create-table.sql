@@ -1,14 +1,8 @@
 /*
  Criação das tabelas
 */
-
-
-CREATE SEQUENCE client_sequence
-    START 2
-    INCREMENT 2;
-
 CREATE TABLE IF NOT EXISTS clientes (
-  id INT PRIMARY KEY DEFAULT nextval('client_sequence'),
+  id SERIAL PRIMARY KEY,
   limite INTEGER NOT NULL,
   saldo INTEGER NOT NULL
 );
@@ -67,3 +61,15 @@ CREATE TRIGGER processa_transacao_trigger
 BEFORE INSERT ON transacoes
 FOR EACH ROW EXECUTE FUNCTION processa_transacao();
 
+/*
+ Inicializa a tabela de clientes (mandatório segundo o enunciado do desafio)
+*/
+DO $$
+BEGIN
+  INSERT INTO clientes (limite, saldo) VALUES (100000, 0);
+  INSERT INTO clientes (limite, saldo) VALUES (80000, 0);
+  INSERT INTO clientes (limite, saldo) VALUES (1000000, 0);
+  INSERT INTO clientes (limite, saldo) VALUES (10000000, 0);
+  INSERT INTO clientes (limite, saldo) VALUES (500000, 0);
+END;
+$$;
