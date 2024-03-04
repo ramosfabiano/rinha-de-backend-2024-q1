@@ -43,7 +43,8 @@ services:
       context: ./app
       dockerfile: Dockerfile
     depends_on:
-      - postgres
+      - postgres01
+      - postgres02
     deploy:
       resources:
         limits:
